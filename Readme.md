@@ -28,8 +28,8 @@ Filament winding machine powererd by ESPdruino
 | 34        | 3       | AD3        |
 | 38        | 4       | AD4        |
 | 39        | 5       | AD5        |
-| SCL       | SCL     |            |
-| SDA       | SDA     |            |
+| SCL       | SCL     | SCLtopright|
+| SDA       | SDA     | SDAtopright|
 | RST       | AREF    |            |
 | GND       | GND     | GND        |
 | 18        | 13      | SpinDir    |
