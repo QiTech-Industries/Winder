@@ -7,6 +7,9 @@ Filament winding machine powererd by ESPdruino
 ## Arduino + CNC Shield
 ![Arduino-CNC-Shield-Scematics_](https://user-images.githubusercontent.com/44653977/126171971-0116264c-c214-4cdb-9ea3-75b781c61fb7.jpg)
 ## ESPdruino
+
+![NJVdz](https://user-images.githubusercontent.com/61654753/126534017-fa5016fe-27c8-49df-95e9-fb70896e3d30.png)
+
 ![ESPdruino-Schematics](https://user-images.githubusercontent.com/44653977/126172108-59261051-43c0-4276-8642-24a51f24ba7b.jpeg)
 ## TMC21130 pin out
 ![TMC2130-Pinout-with-Legend-1](https://user-images.githubusercontent.com/61654753/126180279-9baa4cb1-23f9-4813-917e-d8515cacb58d.jpg)
@@ -28,8 +31,8 @@ Filament winding machine powererd by ESPdruino
 | 34        | 3       | AD3        |
 | 38        | 4       | AD4        |
 | 39        | 5       | AD5        |
-| SCL       | SCL     | SCLtopright|
-| SDA       | SDA     | SDAtopright|
+| SCL       | SCL     | 22         |
+| SDA       | SDA     | 21         |
 | RST       | AREF    |            |
 | GND       | GND     | GND        |
 | 18        | 13      | SpinDir    |
