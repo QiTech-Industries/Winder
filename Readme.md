@@ -35,10 +35,10 @@ Filament winding machine powererd by ESPdruino
 | SDA       | SDA     | 21         |
 | RST       | AREF    |            |
 | GND       | GND     | GND        |
-| 18        | 13      | SpinDir    |
-| 19        | 12      | SpinEnable |
-| 23        | 11      | Z-EndStop  |
-| 5         | 10      | Y-EndStop  |
+| 18 (SCK)  | 13      | SpinDir    |
+| 19 (MISO) | 12      | SpinEnable |
+| 23 (MOSI) | 11      | Z-EndStop  |
+| 5  (SS)   | 10      | Y-EndStop  |
 | 13        | 9       | X-EndStop  |
 | 12        | 8       | EN         |
 | 14        | 7       | Z-DIR      |
