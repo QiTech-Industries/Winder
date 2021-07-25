@@ -49,3 +49,7 @@ Filament winding machine powererd by ESPdruino
 | 26        | 2       | X-STEP     |
 |           | TX->1   | D1         |
 |           | TX<-0   | D0         |
+
+
+Pin Nutztung:
+SDA(21) SCL(22) Coolant(34) auf den CNC-Shield als CS pin benutzten funktioniert nicht. Tx pin ist as CS pin nutzbar. Somit können alle 3 motoren über SPI angesteuert werden
