@@ -53,3 +53,4 @@ Filament winding machine powererd by ESPdruino
 
 Pin Nutztung:
 SDA(21) SCL(22) Coolant(34) auf den CNC-Shield als CS pin benutzten funktioniert nicht. Tx pin ist as CS pin nutzbar. Somit können alle 3 motoren über SPI angesteuert werden
+Tx nur nutzbar wenn serial monitor aus aus ist. Beim start darf der serial monitor nicht geöffnet sein, sonst ist die configuration über den cs pin (der an tx angeschlossen ist) 
