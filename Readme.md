@@ -25,9 +25,9 @@ Filament winding machine powererd by ESPdruino
 | GND       | GND     | GND1       |
 | GND       | GND     | GND2       |
 | VN        | VIN     | V_IN       |
-| 2         | 0       | AD0        |
-| 4         | 1       | AD1        |
-| 36        | 2       | AD2        |
+| 2         | 0       | AD0 (Abort)|
+| 4         | 1       | AD1 (Hold) |
+| 36        | 2       | AD2 (resum)|
 | 34        | 3       | AD3        |
 | 38        | 4       | AD4        |
 | 39        | 5       | AD5        |
@@ -52,5 +52,5 @@ Filament winding machine powererd by ESPdruino
 
 
 Pin Nutztung:
-SDA(21) SCL(22) Coolant(34) auf den CNC-Shield als CS pin benutzten funktioniert nicht. Tx pin ist as CS pin nutzbar. Somit können alle 3 motoren über SPI angesteuert werden
-Tx nur nutzbar wenn serial monitor aus aus ist. Beim start darf der serial monitor nicht geöffnet sein, sonst ist die configuration über den cs pin (der an tx angeschlossen ist) 
+Für 3ten CS Pin funkioniert der Abort pin unten rechts auf den CNC shield.
+SDA(21) SCL(22) Coolant(34) auf den CNC-Shield als CS pin benutzten funktioniert nicht. Tx pin ist as CS pin nutzbar aber sehr unzuverlässig weil er auch für den Serial Monitor gebraucht wird.
