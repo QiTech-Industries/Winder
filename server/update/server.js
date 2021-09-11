@@ -6,10 +6,11 @@ const app = express();
 app.disable('x-powered-by');
 
 app.get('/:mac', async (req, res) => {
+  const ip = req.get("x-real-ip");
   const mac = req.params.mac;
 
   if (!validateMac(mac)) {
-    log(req.ip, "invalid");
+    log(ip, "invalid");
     res.status(400).send();
     return;
   }
@@ -20,10 +21,10 @@ app.get('/:mac', async (req, res) => {
   // Winders with a 1:5 Gear ratio
   if (!deviceExists(mac)) {
     registerWinderGearRatio5(mac).then(() => {
-      log(req.ip, "register", mac);
+      log(ip, "register", mac);
     });
   }
-  else log(req.ip, "check", mac);
+  else log(ip, "check", mac);
   //
 
 
@@ -44,12 +45,12 @@ app.get('/success/:mac', async (req, res) => {
   const mac = req.params.mac;
 
   if (!validateMac(mac)) {
-    log(req.ip, "invalid");
+    log(ip, "invalid");
     res.status(400).send();
     return;
   }
 
-  log(req.ip, "success", mac);
+  log(ip, "success", mac);
 
   checkForDeviceUpdate(mac).then(firmware => {
     if (firmware) {
