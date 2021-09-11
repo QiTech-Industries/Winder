@@ -60,7 +60,8 @@ services:
     build:
       context: ../update/
     volumes:
-      - ../update/:/app/
+      - ../update/:/usr/src/app
+    command: /usr/src/app/entrypoint.sh
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.qi-update.rule=Host(`update.qitech.de${DOMAIN_SUFFIX}`, `www.update.qitech.de${DOMAIN_SUFFIX}`)"

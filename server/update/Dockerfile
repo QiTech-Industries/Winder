@@ -1,9 +1,17 @@
 FROM node:14
 
-WORKDIR /app
+# Create and define the node_modules's cache directory.
+RUN mkdir /usr/src/cache
+WORKDIR /usr/src/cache
 
-COPY . .
+# Install the application's dependencies into the node_modules's cache directory.
+COPY package.json ./
+COPY package-lock.json ./
+RUN npm install npm@7.6.3
 RUN npm install
 
+# Create and define the application's working directory.
+RUN mkdir /usr/src/app
+WORKDIR /usr/src/app
+
 EXPOSE 5000
-CMD [ "npm", "run", "serve" ]
