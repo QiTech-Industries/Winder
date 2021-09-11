@@ -1,12 +1,20 @@
 {
-  "scripts": {
-    "serve": "nodemon server.js"
-  },
+  "name": "update",
+  "version": "1.0.0",
+  "description": "QiTech Update Server",
+  "main": "server.js",
   "dependencies": {
     "dateformat": "^4.5.1",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "mysql2": "^2.3.0",
     "nodemon": "^2.0.12"
-  }
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "serve": "nodemon server.js"
+  },
+  "author": "",
+  "license": "ISC"
 }
