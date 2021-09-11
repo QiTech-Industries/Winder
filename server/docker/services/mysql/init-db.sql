@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: qi-db
--- Erstellungszeit: 11. Sep 2021 um 17:27
+-- Erstellungszeit: 11. Sep 2021 um 20:24
 -- Server-Version: 5.7.34
 -- PHP-Version: 7.4.20
 
@@ -69,6 +69,14 @@ CREATE TABLE `hardware` (
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Daten für Tabelle `hardware`
+--
+
+INSERT INTO `hardware` (`id`, `name`) VALUES
+(1, 'Winder 1:5 Getriebe'),
+(2, 'Winder 1:14 Getriebe');
+
 -- --------------------------------------------------------
 
 --
@@ -78,7 +86,7 @@ CREATE TABLE `hardware` (
 CREATE TABLE `logs` (
   `id` int(11) NOT NULL,
   `mac` varchar(36) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `ip` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ip` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
   `action` enum('invalid','check','register','success') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'invalid',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -131,7 +139,7 @@ ALTER TABLE `firmware`
 -- AUTO_INCREMENT für Tabelle `hardware`
 --
 ALTER TABLE `hardware`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT für Tabelle `logs`
