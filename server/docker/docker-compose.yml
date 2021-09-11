@@ -83,6 +83,7 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_RANDOM_ROOT_PASSWORD: ok # printed to log
+      TZ: Europe/Amsterdam
     volumes:
       - dbdata:/var/lib/mysql
       - ./services/mysql:/docker-entrypoint-initdb.d
