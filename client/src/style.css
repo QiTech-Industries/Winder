@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import '/assets/fonts/style.css';
+
+.tooltip {
+	@apply invisible absolute;
+  }
+  
+  .has-tooltip:hover .tooltip {
+	@apply visible z-50;
+  }
+  
+input[type=range]::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	cursor: pointer;
+	@apply pointer-events-auto w-6 h-6 bg-red-500;
+}
+
+.left-thumb::-webkit-slider-thumb{
+	@apply -ml-3;
+}
+
+.right-thumb::-webkit-slider-thumb{
+	@apply ml-3;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button
+{
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+input[type=number]{
+	-moz-appearance: textfield;
+}
