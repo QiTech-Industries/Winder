@@ -95,7 +95,7 @@ struct soft_config_s
 
 public:
     String asJSON();
-    void fromJSON(String json);
+    void fromJSON(char* json);
     void store();
     void backup();
     bool load();

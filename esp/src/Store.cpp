@@ -58,39 +58,41 @@ String soft_config_s::asJSON()
 
     if (serializeJson(doc, json) == 0)
     {
-        Serial.println("JSON serialization failed!");
+        Serial.println("[Store] JSON serialization failed!");
     }
 
     return json;
     //////////////////////////////////
 }
 
-void soft_config_s::fromJSON(String json)
+void soft_config_s::fromJSON(char* json)
 {
     // Convert JSON Config to struct
     ///////////////////////////////////
     StaticJsonDocument<512> doc;
 
-    if (deserializeJson(doc, json) == 0)
-    {
-        Serial.println("JSON deserialization failed!");
-    }
+    deserializeJson(doc, json);
     
+    // char
     strcpy(wifi.ssid, doc["wifi"]["ssid"]);
     strcpy(wifi.password, doc["wifi"]["password"]);
     strcpy(wifi.ap_ssid, doc["wifi"]["ap_ssid"]);
     strcpy(wifi.ap_password, doc["wifi"]["ap_password"]);
     strcpy(wifi.friendly_name, doc["wifi"]["friendly_name"]);
     strcpy(wifi.mdns_name, doc["wifi"]["mdns_name"]);
-    wifi.ap_enabled = doc["wifi"]["ap_enabled"];
     strcpy(software.spiffs.version, doc["software"]["spiffs"]["version"]);
     strcpy(software.spiffs.build, doc["software"]["spiffs"]["build"]);
     strcpy(software.spiffs.date, doc["software"]["spiffs"]["date"]);
     strcpy(software.firmware.version, doc["software"]["firmware"]["version"]);
     strcpy(software.firmware.build, doc["software"]["firmware"]["build"]);
     strcpy(software.firmware.date, doc["software"]["firmware"]["date"]);
-    ferrari_min = doc["wifi"]["ferrari_min"];
-    ferrari_max = doc["wifi"]["ferrari_max"];
+    
+    // bool
+    wifi.ap_enabled = doc["wifi"]["ap_enabled"];
+
+    // int
+    ferrari_min = doc["ferrari_min"];
+    ferrari_max = doc["ferrari_max"];
     ///////////////////////////////////
 }
 
@@ -115,7 +117,7 @@ void soft_config_s::backup()
     LITTLEFS.remove("/winder.conf");
     prefs.begin("winder", false);
     String json = soft.asJSON();
-    prefs.putString("config", json);
+    prefs.putBytes("config", json.c_str(), 512);
     Serial.println("[Store] Data Backup stored. Update can begin.");
     ///////////////////////////////////
 }
@@ -161,9 +163,11 @@ bool soft_config_s::load()
     ///////////////////////////////////
     if (prefs.begin("winder", false) && prefs.isKey("config"))
     {
-        String json = prefs.getString("config");
+        char buffer[512];
+        prefs.getBytes("config", buffer, 512);
         Serial.println("[Store] Loading Backup into Config");
-        soft.fromJSON(json);
+        Serial.println(buffer);
+        soft.fromJSON(buffer);
     }
     else
     {
