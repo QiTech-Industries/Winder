@@ -5,28 +5,6 @@ const { validateMac } = require('./utils')
 const app = express();
 app.disable('x-powered-by');
 
-app.get('/success/:mac', async (req, res) => {
-  const mac = req.params.mac;
-
-  if (!validateMac(mac)) {
-    log(ip, "invalid");
-    res.status(400).send();
-    return;
-  }
-
-  log(ip, "success", mac);
-
-  checkForDeviceUpdate(mac).then(firmware => {
-    if (firmware) {
-      updateVersion(firmware.type, firmware.id, mac);
-      res.status(204).send();
-      return;
-    }
-    res.status(400).send();
-    return;
-  });
-});
-
 app.get('/:mac', async (req, res) => {
   const ip = req.get("x-real-ip");
   const mac = req.params.mac;
@@ -65,9 +43,27 @@ app.get('/:mac', async (req, res) => {
   });
 });
 
-// In case no route matches
-app.get('', async (req, res) => {
-  res.status(400).send();
+app.get('/success/:mac', async (req, res) => {
+  const ip = req.get("x-real-ip");
+  const mac = req.params.mac;
+
+  if (!validateMac(mac)) {
+    log(ip, "invalid");
+    res.status(400).send();
+    return;
+  }
+
+  log(ip, "success", mac);
+
+  checkForDeviceUpdate(mac).then(firmware => {
+    if (firmware) {
+      updateVersion(firmware.type, firmware.id, mac);
+      res.status(204).send();
+      return;
+    }
+    res.status(400).send();
+    return;
+  });
 });
 
 app.listen(5000, () => {
