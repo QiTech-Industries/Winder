@@ -48,8 +48,9 @@ struct stepper_s
 
 struct version_s
 {
-    char version[8];
-    char build[12];
+    String version;
+    String build;
+    String date;
 };
 
 struct hard_config_s
@@ -66,12 +67,6 @@ struct hard_config_s
         char default_path[32];
         char socket_path[32];
     } server;
-    struct software_s
-    {
-        version_s spiffs;
-        version_s firmware;
-        uint16_t update_interval;
-    } software;
     struct device_s
     {
         uint16_t hardware_version;
@@ -90,13 +85,21 @@ struct soft_config_s
         char mdns_name[64];     // {mdns_name}.local (winder domain)
         bool ap_enabled;
     } wifi;
+    struct software_s
+    {
+        version_s spiffs;
+        version_s firmware;
+    } software;
     uint16_t ferrari_min;
     uint16_t ferrari_max;
 
 public:
     String asJSON();
     void fromJSON(String json);
-    void set(soft_config_s conf);
+    void store();
+    void backup();
+    bool load();
+    void loadBlynkCredentials();
 };
 
 struct config_s

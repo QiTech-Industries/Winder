@@ -2,23 +2,10 @@
 
 class Wifi
 {
-private:
-    TimerForMethods<Wifi> timer;
-
-    void loop()
-    {
-        if (WiFi.status() != WL_CONNECTED)
-        {
-            DEBUG_PRINT(".");
-        }
-    }
-
 public:
-    Wifi() : timer(this, &Wifi::loop)
+    Wifi()
     {
         // Do not set WiFi.mode() or disconnect() as it causes esp_wifi_init to be called twice
-        WiFi.setAutoReconnect(true);
-        timer.setInterval(1000);
         WiFi.scanNetworks(true);
     }
 
@@ -30,19 +17,8 @@ public:
 
         WiFi.hostname("");
         WiFi.begin(ssid, password);
-        timer.start();
-        DEBUG_PRINTF("[Wifi] Connecting to WIFI: %s", ssid);
-    }
-
-    void disconnect()
-    {
-        WiFi.disconnect(true, true);
-        timer.stop();
-    }
-
-    bool connected()
-    {
-        return WiFi.isConnected();
+        DEBUG_PRINTLN(String("[Wifi] MAC Address: ") + WiFi.macAddress());
+        DEBUG_PRINTF("[Wifi] Connecting to WIFI: %s\n", ssid);
     }
 
     void createAP(const char *ssid, const char *password = (const char *)__null)
@@ -82,13 +58,23 @@ public:
         return json;
     }
 
-    IPAddress getAPIP()
+    void updateStatus()
     {
-        return WiFi.softAPIP();
-    }
-
-    void destroyAP()
-    {
-        WiFi.softAPdisconnect(true);
+        if (connection == OFFLINE && WiFi.isConnected())
+        {
+            DEBUG_PRINTLN("[Wifi] Wifi successfully connected");
+            //server.emit("connect", String("\"connected\""));
+            connection = ONLINE;
+        }
+        else if (connection == CONNECTING && WiFi.status() > WL_CONNECTED)
+        {
+            DEBUG_PRINTLN("Wifi connection failed");
+            //server.emit("connect", String("\"failed\""));
+            connection = OFFLINE;
+        }
+        else if (connection == ONLINE && !WiFi.isConnected())
+        {
+            connection = OFFLINE;
+        }
     }
 };
