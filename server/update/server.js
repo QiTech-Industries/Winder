@@ -20,10 +20,10 @@ app.get('/:mac', async (req, res) => {
   // currently all supported devices that have not been registered by hand are
   // Winders with a 1:5 Gear ratio
   deviceExists(mac).then(exists => {
-    if(!exists){
+    if (!exists) {
       registerWinderGearRatio5(mac).then(() => {
         log(ip, "register", mac);
-      });    
+      });
     }
     else log(ip, "check", mac);
   })
@@ -44,6 +44,7 @@ app.get('/:mac', async (req, res) => {
 });
 
 app.get('/success/:mac', async (req, res) => {
+  const ip = req.get("x-real-ip");
   const mac = req.params.mac;
 
   if (!validateMac(mac)) {
@@ -57,7 +58,7 @@ app.get('/success/:mac', async (req, res) => {
   checkForDeviceUpdate(mac).then(firmware => {
     if (firmware) {
       updateVersion(firmware.type, firmware.id, mac);
-      res.status(201).send();
+      res.status(204).send();
       return;
     }
     res.status(400).send();
