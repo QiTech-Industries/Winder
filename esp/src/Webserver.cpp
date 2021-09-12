@@ -126,9 +126,11 @@ public:
                                {
                                case WS_EVT_CONNECT:
                                    event = "ws_connect";
+                                   DEBUG_PRINTLN("[Server] Client connected to Websocket.");
                                    break;
                                case WS_EVT_DISCONNECT:
                                    event = "ws_disconnect";
+                                   DEBUG_PRINTLN("[Server] Client disconnected from Websocket.");
                                    break;
                                case WS_EVT_ERROR:
                                    event = "error";

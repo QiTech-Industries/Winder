@@ -212,16 +212,6 @@ public:
 
     // Handle incoming socket events
     ///////////////////////////////////
-    server.on("ws_connect", []()
-              {
-                DEBUG_PRINTLN("Client connected to Websocket.");
-                return String();
-              });
-    server.on("ws_disconnect", []()
-              {
-                DEBUG_PRINTLN("Client disconnected from Websocket.");
-                return String();
-              });
     server.on("connect", [](JsonObject data)
               {
                 wifi.connect(data["name"], data["password"]);
