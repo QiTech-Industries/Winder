@@ -30,24 +30,6 @@ enum commands_s
     ADJUST
 };
 
-struct BlynkStore
-{
-    uint32_t magic;
-    char version[15];
-    uint8_t flags;
-    char wifiSSID[34];
-    char wifiPass[64];
-    char cloudToken[34];
-    char cloudHost[34];
-    uint16_t cloudPort;
-    uint32_t staticIP;
-    uint32_t staticMask;
-    uint32_t staticGW;
-    uint32_t staticDNS;
-    uint32_t staticDNS2;
-    int last_error;
-};
-
 struct stepper_s
 {
     uint16_t max_current;
@@ -64,36 +46,41 @@ struct stepper_s
     } pins;
 };
 
-struct Version
+struct version_s
 {
-    char build[8];
     char version[8];
+    char build[12];
 };
 
-struct HardConfig
+struct hard_config_s
 {
-    struct Motors
+    struct motors_s
     {
         stepper_s puller;
         stepper_s ferrari;
         stepper_s spool;
     } motors;
-    struct Server
+    struct server_s
     {
         uint16_t port;
         char default_path[32];
         char socket_path[32];
     } server;
-    struct Software
+    struct software_s
     {
-        Version spiffs;
-        Version firmware;
+        version_s spiffs;
+        version_s firmware;
+        uint16_t update_interval;
     } software;
+    struct device_s
+    {
+        uint16_t hardware_version;
+    } device;
 };
 
-struct SoftConfig
+struct soft_config_s
 {
-    struct Wifi
+    struct wifi_s
     {
         char ssid[64];
         char password[34];
@@ -109,17 +96,17 @@ struct SoftConfig
 public:
     String asJSON();
     void fromJSON(String json);
-    void set(SoftConfig conf);
+    void set(soft_config_s conf);
 };
 
-struct Config
+struct config_s
 {
-    HardConfig hard;
-    SoftConfig soft;
+    hard_config_s hard;
+    soft_config_s soft;
 };
 
-extern SoftConfig soft;
-extern HardConfig hard;
+extern soft_config_s soft;
+extern hard_config_s hard;
 extern mode_e mode;
 extern connection_e connection;
 extern FastAccelStepperEngine engine;
