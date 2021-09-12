@@ -3,7 +3,24 @@
 class EEPROM
 {
 private:
-    BlynkStore blynkStore;
+    struct blynk_store_s
+    {
+        uint32_t magic;
+        char version[15];
+        uint8_t flags;
+        char wifiSSID[34];
+        char wifiPass[64];
+        char cloudToken[34];
+        char cloudHost[34];
+        uint16_t cloudPort;
+        uint32_t staticIP;
+        uint32_t staticMask;
+        uint32_t staticGW;
+        uint32_t staticDNS;
+        uint32_t staticDNS2;
+        int last_error;
+    } blynkStore;
+
     Preferences prefs;
 
 public:

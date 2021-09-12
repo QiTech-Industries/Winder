@@ -3,7 +3,7 @@
 void setup()
 {
   Serial.begin(115200);
-  Config conf = {
+  config_s conf = {
       .hard = {
           .motors = {
               .puller = {
@@ -50,11 +50,19 @@ void setup()
 
               },
           },
-          .server = {.port = 80, "index.html", "/ws"}},
+          .server = {.port = 80, "index.html", "/ws"},
+          .software = {
+              .spiffs = {"0.0.1", "1209211146"},
+              .firmware = {"0.0.1", "1209211146"},
+              .update_interval = 5000,
+          },
+          .device = {
+              .hardware_version = 1,
+          }},
       .soft = {
           .wifi = {
-              "FRITZ!Box 7412",
-              "81969407061093121957",
+              "WLAN-31CC81",
+              "5825693716601501",
               "Jarvis Winder",
               "",
               "Jarvis Winder",
