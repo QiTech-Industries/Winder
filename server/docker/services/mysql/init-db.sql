@@ -35,8 +35,8 @@ CREATE TABLE `devices` (
   `hardware_id` int(11) NOT NULL,
   `update_start` time NOT NULL DEFAULT '00:00:00',
   `update_end` time NOT NULL DEFAULT '05:00:00',
-  `firmware_spiffs` int(11) NOT NULL,
-  `firmware_firmware` int(11) NOT NULL,
+  `firmware_spiffs` int(11)  DEFAULT NULL,
+  `firmware_firmware` int(11) DEFAULT NULL,
   `beta` tinyint(1) NOT NULL DEFAULT '0',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP

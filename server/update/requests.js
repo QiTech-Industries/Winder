@@ -13,7 +13,7 @@ const deviceExists = async (mac) => {
     const sql = "SELECT COUNT(*) AS count from devices WHERE mac=?";
     const result = await db.query(sql, mac);
 
-    if (result[0].length) return true;
+    if (result[0][0].count > 0) return true;
     return false;
 }
 
@@ -53,10 +53,10 @@ const registerWinderGearRatio5 = async (mac) => {
     const hardware_id = 1;
     const firmware = await getLatestFirmware(hardware_id);
 
-    if (!firmware) return false;
+    if(firmware) data = { mac, hardware_id, firmware_firmware: firmware.firmware.id };
+    else data = { mac, hardware_id};
 
     const sql = "INSERT IGNORE INTO devices SET ?";
-    const data = { mac, hardware_id, firmware_firmware: firmware.firmware.id, firmware_spiffs: firmware.spiffs.id };
     await db.query(sql, data);
 }
 

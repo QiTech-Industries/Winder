@@ -19,12 +19,14 @@ app.get('/:mac', async (req, res) => {
   // it should not be possible for devices to register themselves!
   // currently all supported devices that have not been registered by hand are
   // Winders with a 1:5 Gear ratio
-  if (!deviceExists(mac)) {
-    registerWinderGearRatio5(mac).then(() => {
-      log(ip, "register", mac);
-    });
-  }
-  else log(ip, "check", mac);
+  deviceExists(mac).then(exists => {
+    if(!exists){
+      registerWinderGearRatio5(mac).then(() => {
+        log(ip, "register", mac);
+      });    
+    }
+    else log(ip, "check", mac);
+  })
   //
 
 
