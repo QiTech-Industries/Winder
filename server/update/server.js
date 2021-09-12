@@ -36,7 +36,7 @@ app.get('/:mac', async (req, res) => {
       res.download(firmware.path);
       return;
     }
-    res.status(400).send();
+    res.status(201).send();
     return;
   });
 });
