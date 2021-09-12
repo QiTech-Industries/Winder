@@ -55,13 +55,17 @@ services:
     command: /usr/src/app/entrypoint.sh
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.qi-update.rule=Host(`update.qitech.de${DOMAIN_SUFFIX}`, `www.update.qitech.de${DOMAIN_SUFFIX}`)"
-      - "traefik.http.routers.qi-update.tls=true"
-      - "traefik.http.routers.qi-update.entrypoints=web,websecure"
-      - "traefik.http.services.qi-update.loadbalancer.server.port=5000"
 
-      # autogenerate certificate
-      - traefik.http.routers.qi-update.tls.certresolver=le
+      - "traefik.http.routers.qi-websecure.rule=Host(`update.qitech.de${DOMAIN_SUFFIX}`, `www.update.qitech.de${DOMAIN_SUFFIX}`)"
+      - "traefik.http.routers.qi-websecure.tls=true"
+      - "traefik.http.routers.qi-websecure.entrypoints=websecure"
+      - traefik.http.routers.qi-websecure.tls.certresolver=le
+
+      - "traefik.http.routers.qi-web.rule=Host(`update.qitech.de${DOMAIN_SUFFIX}`, `www.update.qitech.de${DOMAIN_SUFFIX}`)"
+      - "traefik.http.routers.qi-web.entrypoints=web"
+
+      - "traefik.http.services.qi-node.loadbalancer.server.port=5000"
+  
 
   database:
     image: mysql:5.7
