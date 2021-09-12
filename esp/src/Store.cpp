@@ -3,19 +3,6 @@
 #include <LITTLEFS.h>
 #include <Preferences.h>
 
-// Copy String or char into struct
-///////////////////////////////////
-void cpy(char *dst, const char *src)
-{
-    strlcpy(dst, src, sizeof(dst));
-}
-
-void cpy(String dst, const char *src)
-{
-    strlcpy((char *)dst.c_str(), src, sizeof(dst));
-}
-///////////////////////////////////
-
 String mode2string()
 {
     // Convert Mode enum to String
@@ -88,18 +75,20 @@ void soft_config_s::fromJSON(String json)
     {
         Serial.println("JSON deserialization failed!");
     }
-
-    cpy(wifi.ssid, doc["wifi"]["ssid"]);
-    cpy(wifi.password, doc["wifi"]["password"]);
-    cpy(wifi.ap_ssid, doc["wifi"]["ap_ssid"]);
-    cpy(wifi.ap_password, doc["wifi"]["ap_password"]);
-    cpy(wifi.friendly_name, doc["wifi"]["friendly_name"]);
-    cpy(wifi.mdns_name, doc["wifi"]["mdns_name"]);
+    
+    strcpy(wifi.ssid, doc["wifi"]["ssid"]);
+    strcpy(wifi.password, doc["wifi"]["password"]);
+    strcpy(wifi.ap_ssid, doc["wifi"]["ap_ssid"]);
+    strcpy(wifi.ap_password, doc["wifi"]["ap_password"]);
+    strcpy(wifi.friendly_name, doc["wifi"]["friendly_name"]);
+    strcpy(wifi.mdns_name, doc["wifi"]["mdns_name"]);
     wifi.ap_enabled = doc["wifi"]["ap_enabled"];
-    cpy(software.spiffs.version, doc["software"]["spiffs"]["version"]);
-    cpy(software.spiffs.build, doc["software"]["spiffs"]["build"]);
-    cpy(software.firmware.version, doc["software"]["firmware"]["version"]);
-    cpy(software.firmware.build, doc["software"]["firmware"]["build"]);
+    strcpy(software.spiffs.version, doc["software"]["spiffs"]["version"]);
+    strcpy(software.spiffs.build, doc["software"]["spiffs"]["build"]);
+    strcpy(software.spiffs.date, doc["software"]["spiffs"]["date"]);
+    strcpy(software.firmware.version, doc["software"]["firmware"]["version"]);
+    strcpy(software.firmware.build, doc["software"]["firmware"]["build"]);
+    strcpy(software.firmware.date, doc["software"]["firmware"]["date"]);
     ferrari_min = doc["wifi"]["ferrari_min"];
     ferrari_max = doc["wifi"]["ferrari_max"];
     ///////////////////////////////////
@@ -173,8 +162,7 @@ bool soft_config_s::load()
     if (prefs.begin("winder", false) && prefs.isKey("config"))
     {
         String json = prefs.getString("config");
-        Serial.println("[Store] Creating /winder.conf from Backup");
-        Serial.println(json);
+        Serial.println("[Store] Loading Backup into Config");
         soft.fromJSON(json);
     }
     else

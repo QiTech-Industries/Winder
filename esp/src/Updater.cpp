@@ -47,16 +47,16 @@ public:
         if (XUpdate == "spiffs")
         {
             partition = U_SPIFFS;
-            soft.software.spiffs.version = XVersion;
-            soft.software.spiffs.build = XBuild;
-            soft.software.spiffs.date = date.substring(0, 16);
+            strcpy(soft.software.spiffs.version, XVersion.c_str());
+            strcpy(soft.software.spiffs.build, XBuild.c_str());
+            strcpy(soft.software.spiffs.date, date.substring(0, 16).c_str());
         }
         else if (XUpdate == "firmware")
         {
             partition = U_FLASH;
-            soft.software.firmware.version = XVersion;
-            soft.software.firmware.build = XBuild;
-            soft.software.firmware.date = date.substring(0, 16);
+            strcpy(soft.software.firmware.version, XVersion.c_str());
+            strcpy(soft.software.firmware.build, XBuild.c_str());
+            strcpy(soft.software.firmware.date, date.substring(0, 16).c_str());
         }
         else
         {

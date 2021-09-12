@@ -204,7 +204,7 @@ public:
 
     // Setup Timers
     ///////////////////////////////////
-    updater.setInterval(10000);
+    updater.setInterval(30000);
     report.setInterval(1000);
     report.setCallback(reportStatus);
     report.start();

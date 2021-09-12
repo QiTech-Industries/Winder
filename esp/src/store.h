@@ -48,9 +48,9 @@ struct stepper_s
 
 struct version_s
 {
-    String version;
-    String build;
-    String date;
+    char version[50];
+    char build[20];
+    char date[20];
 };
 
 struct hard_config_s
