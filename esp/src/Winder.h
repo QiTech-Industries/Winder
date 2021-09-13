@@ -124,10 +124,10 @@ void wind(float mpm, bool start = false)
   //
 }
 
+// Send machine status to web ui every Xs
+///////////////////////////////////
 void reportStatus()
 {
-  wifi.updateStatus();
-
   StaticJsonDocument<512> doc;
   String json;
 
@@ -155,11 +155,12 @@ void reportStatus()
 
   if (serializeJson(doc, json) == 0)
   {
-    Serial.println("JSON serialization failed!");
+    Serial.println("[Winder] JSON serialization failed!");
   }
 
   server.emit("stats", json);
 }
+///////////////////////////////////
 
 class Winder
 {
@@ -172,8 +173,8 @@ public:
     ///////////////////////////////////
     hard = conf.hard;
     soft = conf.soft;
-    soft.loadBlynkCredentials();
     soft.load();
+    DEBUG_PRINTLN(soft.asJSON());
     ///////////////////////////////////
 
     // Create HTTP and WS server
@@ -184,14 +185,14 @@ public:
 
     // Connect to Wifi and create AP
     ///////////////////////////////////
-    if (soft.wifi.ap_enabled)
-    {
-      wifi.createAP(soft.wifi.ap_ssid, soft.wifi.ap_password);
-      server.createCaptive(WiFi.softAPIP());
-    }
     if (strlen(soft.wifi.ssid))
     {
       wifi.connect(soft.wifi.ssid, soft.wifi.password);
+    }
+    if (soft.wifi.ap_enabled || !strlen(soft.wifi.ssid))
+    {
+      wifi.createAP(soft.wifi.ap_ssid, soft.wifi.ap_password);
+      server.createCaptive(WiFi.softAPIP());
     }
     ///////////////////////////////////
 
@@ -210,12 +211,13 @@ public:
     report.start();
     ///////////////////////////////////
 
+    home();
+
     // Handle incoming socket events
     ///////////////////////////////////
     server.on("connect", [](JsonObject data)
               {
                 wifi.connect(data["name"], data["password"]);
-                connection = CONNECTING;
                 return String();
               });
     server.on("scan", [](JsonObject data)
@@ -245,10 +247,37 @@ public:
                 unwind(mpm);
                 return String();
               });
+    server.on("modify", [](JsonObject data)
+              {
+                soft.wifi.ap_enabled = data["ap_enabled"];
+                strcpy(soft.wifi.mdns_name, data["mdns_name"]);
+                strcpy(soft.wifi.ap_ssid, data["ap_ssid"]);
+
+                soft.store();
+                return String();
+              });
     server.on("config", [](JsonObject data)
               { return soft.asJSON(); });
+    ///////////////////////////////////
+
+    // Respond to Wifi connection changes
+    ///////////////////////////////////
+    wifi.conChange([]()
+                   {
+                     switch (connection)
+                     {
+                     case OFFLINE:
+                       server.emit("connect", "\"failed\"");
+                       break;
+                     case ONLINE:
+                       server.emit("connect", "\"connected\"");
+                       break;
+                     default:
+                       break;
+                     }
+                   });
+    ///////////////////////////////////
   }
-  ///////////////////////////////////
 
   void loop()
   {

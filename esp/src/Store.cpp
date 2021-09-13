@@ -65,14 +65,14 @@ String soft_config_s::asJSON()
     //////////////////////////////////
 }
 
-void soft_config_s::fromJSON(char* json)
+void soft_config_s::fromJSON(char *json)
 {
     // Convert JSON Config to struct
     ///////////////////////////////////
     StaticJsonDocument<512> doc;
 
     deserializeJson(doc, json);
-    
+
     // char
     strcpy(wifi.ssid, doc["wifi"]["ssid"]);
     strcpy(wifi.password, doc["wifi"]["password"]);
@@ -86,7 +86,7 @@ void soft_config_s::fromJSON(char* json)
     strcpy(software.firmware.version, doc["software"]["firmware"]["version"]);
     strcpy(software.firmware.build, doc["software"]["firmware"]["build"]);
     strcpy(software.firmware.date, doc["software"]["firmware"]["date"]);
-    
+
     // bool
     wifi.ap_enabled = doc["wifi"]["ap_enabled"];
 
@@ -122,8 +122,51 @@ void soft_config_s::backup()
     ///////////////////////////////////
 }
 
+void soft_config_s::loadBlynkCredentials()
+{
+    // Structure of Blynk Storage
+    ///////////////////////////////////
+    struct blynk_store_s
+    {
+        uint32_t magic;
+        char version[15];
+        uint8_t flags;
+        char wifiSSID[34];
+        char wifiPass[64];
+        char cloudToken[34];
+        char cloudHost[34];
+        uint16_t cloudPort;
+        uint32_t staticIP;
+        uint32_t staticMask;
+        uint32_t staticGW;
+        uint32_t staticDNS;
+        uint32_t staticDNS2;
+        int last_error;
+    } blynkStore;
+    ///////////////////////////////////
+
+    // Load Credentail struct from EEPROM
+    ///////////////////////////////////
+    if (prefs.begin("blynk", false) && prefs.getBytes("config", &blynkStore, sizeof(blynkStore)))
+    {
+        Serial.println("[Store] Found previous Blynk Config:");
+        Serial.println(String(" => ") + blynkStore.wifiSSID);
+        Serial.println(String(" => ") + blynkStore.wifiPass);
+        strlcpy(soft.wifi.ssid, blynkStore.wifiSSID, sizeof(soft.wifi.ssid));
+        strlcpy(soft.wifi.password, blynkStore.wifiPass, sizeof(soft.wifi.password));
+    }
+    else
+    {
+        Serial.println("[EEPROM] No Old Blynk Configuration found.");
+    }
+    prefs.end();
+    ///////////////////////////////////
+}
+
 bool soft_config_s::load()
 {
+    soft_config_s::loadBlynkCredentials();
+
     // Check if Filesystem is available
     ///////////////////////////////////
     byte buffer[1];
@@ -166,7 +209,6 @@ bool soft_config_s::load()
         char buffer[512];
         prefs.getBytes("config", buffer, 512);
         Serial.println("[Store] Loading Backup into Config");
-        Serial.println(buffer);
         soft.fromJSON(buffer);
     }
     else
@@ -176,49 +218,7 @@ bool soft_config_s::load()
     prefs.end();
     ///////////////////////////////////
 
-    Serial.println(soft.asJSON());
     return true;
-}
-
-void soft_config_s::loadBlynkCredentials()
-{
-    // Structure of Blynk Storage
-    ///////////////////////////////////
-    struct blynk_store_s
-    {
-        uint32_t magic;
-        char version[15];
-        uint8_t flags;
-        char wifiSSID[34];
-        char wifiPass[64];
-        char cloudToken[34];
-        char cloudHost[34];
-        uint16_t cloudPort;
-        uint32_t staticIP;
-        uint32_t staticMask;
-        uint32_t staticGW;
-        uint32_t staticDNS;
-        uint32_t staticDNS2;
-        int last_error;
-    } blynkStore;
-    ///////////////////////////////////
-
-    // Load Credentail struct from EEPROM
-    ///////////////////////////////////
-    if (prefs.begin("blynk", false) && prefs.getBytes("config", &blynkStore, sizeof(blynkStore)))
-    {
-        Serial.println("[Store] Found previous Blynk Config:");
-        Serial.println(String(" => ") + blynkStore.wifiSSID);
-        Serial.println(String(" => ") + blynkStore.wifiPass);
-        strlcpy(soft.wifi.ssid, blynkStore.wifiSSID, sizeof(soft.wifi.ssid));
-        strlcpy(soft.wifi.password, blynkStore.wifiPass, sizeof(soft.wifi.password));
-    }
-    else
-    {
-        Serial.println("[EEPROM] No Old Blynk Configuration found.");
-    }
-    prefs.end();
-    ///////////////////////////////////
 }
 
 soft_config_s soft;
