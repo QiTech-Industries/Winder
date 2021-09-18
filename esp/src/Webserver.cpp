@@ -51,11 +51,7 @@ private:
             DEBUG_PRINTLN("Binary Messages are not supported.");
             return false;
         }
-        if (info->index == 0)
-        {
-            request = {};
-            DEBUG_PRINTLN("Socket received data.");
-        }
+        if (info->index == 0) request = {};
 
         data[len] = 0;
         request.json += (char *)data;
@@ -101,7 +97,7 @@ public:
         // create MDNS
         if (!MDNS.begin(hostname))
         {
-            DEBUG_PRINTF("Error setting up MDNS %s port %u", hostname, port);
+            DEBUG_PRINTF("[Server] Error setting up MDNS %s port %u", hostname, port);
         }
         MDNS.setInstanceName(friendly_name);
         MDNS.addService("http", "tcp", port);
@@ -126,9 +122,11 @@ public:
                                {
                                case WS_EVT_CONNECT:
                                    event = "ws_connect";
+                                   DEBUG_PRINTLN("[Server] Client connected to Websocket.");
                                    break;
                                case WS_EVT_DISCONNECT:
                                    event = "ws_disconnect";
+                                   DEBUG_PRINTLN("[Server] Client disconnected from Websocket.");
                                    break;
                                case WS_EVT_ERROR:
                                    event = "error";
@@ -145,14 +143,14 @@ public:
 
                                    if (error)
                                    {
-                                       DEBUG_PRINTLN("JSON could not be decoded.");
+                                       DEBUG_PRINTLN("[Server] JSON could not be decoded.");
                                    }
                                    if (!doc["event"])
                                    {
-                                       DEBUG_PRINTLN("JSON must contain event field.");
+                                       DEBUG_PRINTLN("[Server] JSON must contain event field.");
                                    }
 
-                                   DEBUG_PRINTLN(request.json);
+                                   DEBUG_PRINTLN("[Server]" + request.json);
                                    request.event = doc["event"].as<String>();
                                    request.data = doc["data"];
                                    event = request.event;

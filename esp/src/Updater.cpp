@@ -3,17 +3,15 @@
 class Updater
 {
 private:
-    String overTheAirURL = "http://192.168.178.42:3000/update";
-    String interfaceVersion = "0.0.0";
-    String firmwareVersion = "0.0.0";
-    const char *headerKeys[1] = {"X-Update"};
+    String overTheAirURL = "http://update.qitech.de/";
+    const char *headerKeys[4] = {"X-Update", "X-Build", "X-Version", "date"};
     TimerForMethods<Updater> timer;
     HTTPClient http;
 
 public:
     Updater() : timer(this, &Updater::check)
     {
-        http.collectHeaders(headerKeys, 1);
+        http.collectHeaders(headerKeys, 4);
     }
 
     void restartMCU()
@@ -24,39 +22,41 @@ public:
         };
     }
 
-    void setInterval(uint16_t)
+    void setInterval(uint16_t interval)
     {
-        timer.setInterval(1000);
+        timer.setInterval(interval);
         timer.start();
     }
+
     void check()
     {
-        if (!WiFi.isConnected() || Update.isRunning())
+        if (!WiFi.isConnected() || Update.isRunning() || mode != STANDBY)
         {
             return;
         }
 
-        DEBUG_PRINTLN("[Updater] Checking for Update...");
-
-        http.begin(overTheAirURL + "?spiffs=" + interfaceVersion + "&firmware=" + firmwareVersion);
-
-        int httpCode = http.GET();
-
-        if (httpCode != HTTP_CODE_OK)
-        {
-            DEBUG_PRINTLN("[Updater] Error connecting to Update Server");
-            return;
-        }
+        http.begin(overTheAirURL + WiFi.macAddress());
+        http.GET();
 
         String XUpdate = http.header(headerKeys[0]);
+        String XBuild = http.header(headerKeys[1]);
+        String XVersion = http.header(headerKeys[2]);
+        String date = http.header(headerKeys[3]);
         int partition;
+
         if (XUpdate == "spiffs")
         {
             partition = U_SPIFFS;
+            strcpy(soft.software.spiffs.version, XVersion.c_str());
+            strcpy(soft.software.spiffs.build, XBuild.c_str());
+            strcpy(soft.software.spiffs.date, date.substring(0, 16).c_str());
         }
         else if (XUpdate == "firmware")
         {
             partition = U_FLASH;
+            strcpy(soft.software.firmware.version, XVersion.c_str());
+            strcpy(soft.software.firmware.build, XBuild.c_str());
+            strcpy(soft.software.firmware.date, date.substring(0, 16).c_str());
         }
         else
         {
@@ -67,17 +67,17 @@ public:
         int contentLength = http.getSize();
         if (contentLength <= 0)
         {
-            DEBUG_PRINTLN("[Updater] Content-Length not defined");
+            DEBUG_PRINTLN("[Updater] OTA Content-Length not defined");
             return;
         }
 
-        bool canBegin = Update.begin(contentLength, partition);
-        if (!canBegin)
+        if (!Update.begin(contentLength, partition))
         {
             DEBUG_PRINTLN("[Updater] Not enough space to begin OTA");
             return;
         }
-
+        
+        soft.backup();
         DEBUG_PRINTLN("[Updater] Starting update of " + XUpdate);
 
         Client &client = http.getStream();
@@ -95,7 +95,13 @@ public:
             return;
         }
 
-        DEBUG_PRINTLN("[Updater] Update successfully completed. Rebooting.");
-        restartMCU();
+        http.setURL(overTheAirURL + "success/" + WiFi.macAddress());
+        DEBUG_PRINTLN(soft.asJSON());
+
+        if (http.GET() == HTTP_CODE_NO_CONTENT)
+        {
+            DEBUG_PRINTLN("[Updater] Update successfully completed. Rebooting.");
+            restartMCU();
+        }
     }
 };

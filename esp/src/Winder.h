@@ -1,15 +1,11 @@
 #include <global.h>
 #include <Wifi.cpp>
 #include <Webserver.cpp>
-#include <Filesystem.cpp>
-#include <EEPROM.cpp>
 #include <Stepper.cpp>
 #include <Updater.cpp>
 
-//Updater updater;
+Updater updater;
 Wifi wifi;
-Filesystem filesystem;
-EEPROM eeprom;
 Webserver server;
 Stepper ferrari, spool, puller;
 Timer timer, report;
@@ -70,7 +66,7 @@ void calibrate(uint16_t position, bool startPos = true)
   {
     soft.ferrari_max = position;
   }
-  soft.set(soft);
+  soft.store();
 
   if (mode == CALIBRATING)
   {
@@ -128,25 +124,10 @@ void wind(float mpm, bool start = false)
   //
 }
 
+// Send machine status to web ui every Xs
+///////////////////////////////////
 void reportStatus()
 {
-  if (connection == OFFLINE && WiFi.isConnected())
-  {
-    DEBUG_PRINTLN("Wifi successfully connected");
-    server.emit("connect", String("\"connected\""));
-    connection = ONLINE;
-  }
-  else if (connection == CONNECTING && WiFi.status() > WL_CONNECTED)
-  {
-    DEBUG_PRINTLN("Wifi connection failed");
-    server.emit("connect", String("\"failed\""));
-    connection = OFFLINE;
-  }
-  else if (connection == ONLINE && !WiFi.isConnected())
-  {
-    connection = OFFLINE;
-  }
-
   StaticJsonDocument<512> doc;
   String json;
 
@@ -174,70 +155,69 @@ void reportStatus()
 
   if (serializeJson(doc, json) == 0)
   {
-    Serial.println("JSON serialization failed!");
+    Serial.println("[Winder] JSON serialization failed!");
   }
 
   server.emit("stats", json);
 }
+///////////////////////////////////
 
 class Winder
 {
 public:
-  void setup(Config conf)
+  void setup(config_s conf)
   {
+    printBanner();
+
+    // Load config from correct locations
+    ///////////////////////////////////
     hard = conf.hard;
     soft = conf.soft;
-    printBanner();
-    eeprom.init();
-
-    if (!filesystem.init())
-      return;
-
+    soft.load();
     DEBUG_PRINTLN(soft.asJSON());
-    //filesystem.loadConfig();
+    ///////////////////////////////////
 
+    // Create HTTP and WS server
+    ///////////////////////////////////
     server.create(hard.server.port, hard.server.default_path, soft.wifi.mdns_name, soft.wifi.friendly_name);
+    server.createSocket("/ws");
+    ///////////////////////////////////
 
-    if (soft.wifi.ap_enabled)
-    {
-      wifi.createAP(soft.wifi.ap_ssid, soft.wifi.ap_password);
-      server.createCaptive(wifi.getAPIP());
-    }
+    // Connect to Wifi and create AP
+    ///////////////////////////////////
     if (strlen(soft.wifi.ssid))
     {
-      //wifi.connect(soft.wifi.ssid, soft.wifi.password);
+      wifi.connect(soft.wifi.ssid, soft.wifi.password);
     }
+    if (soft.wifi.ap_enabled || !strlen(soft.wifi.ssid))
+    {
+      wifi.createAP(soft.wifi.ap_ssid, soft.wifi.ap_password);
+      server.createCaptive(WiFi.softAPIP());
+    }
+    ///////////////////////////////////
 
     // Initialize Stepper Motors
+    ///////////////////////////////////
     ferrari.init(hard.motors.ferrari);
     spool.init(hard.motors.spool);
     puller.init(hard.motors.puller);
+    ///////////////////////////////////
 
-    // Setup Winder Status Report Timer
+    // Setup Timers
+    ///////////////////////////////////
+    updater.setInterval(30000);
     report.setInterval(1000);
     report.setCallback(reportStatus);
     report.start();
-    DEBUG_PRINTLN(soft.asJSON());
+    ///////////////////////////////////
 
-    //home();
-   spool.add({.rps = 0.015, .mm = 0, ROTATE});
+    home();
 
-    //Socket event handling
-    server.createSocket("/ws");
-    server.on("ws_connect", []()
-              {
-                DEBUG_PRINTLN("Client connected to Websocket.");
-                return String();
-              });
-    server.on("ws_disconnect", []()
-              {
-                DEBUG_PRINTLN("Client disconnected from Websocket.");
-                return String();
-              });
+    // Handle incoming socket events
+    ///////////////////////////////////
     server.on("connect", [](JsonObject data)
               {
                 wifi.connect(data["name"], data["password"]);
-                connection = CONNECTING;
                 return String();
               });
     server.on("scan", [](JsonObject data)
@@ -267,8 +247,36 @@ public:
                 unwind(mpm);
                 return String();
               });
+    server.on("modify", [](JsonObject data)
+              {
+                soft.wifi.ap_enabled = data["ap_enabled"];
+                strcpy(soft.wifi.mdns_name, data["mdns_name"]);
+                strcpy(soft.wifi.ap_ssid, data["ap_ssid"]);
+
+                soft.store();
+                return String();
+              });
     server.on("config", [](JsonObject data)
               { return soft.asJSON(); });
+    ///////////////////////////////////
+
+    // Respond to Wifi connection changes
+    ///////////////////////////////////
+    wifi.conChange([]()
+                   {
+                     switch (connection)
+                     {
+                     case OFFLINE:
+                       server.emit("connect", "\"failed\"");
+                       break;
+                     case ONLINE:
+                       server.emit("connect", "\"connected\"");
+                       break;
+                     default:
+                       break;
+                     }
+                   });
+    ///////////////////////////////////
   }
 
   void loop()

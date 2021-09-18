@@ -3,55 +3,67 @@
 class Wifi
 {
 private:
-    TimerForMethods<Wifi> timer;
+    TimerForMethods<Wifi> _timer;
+    const char *_ssid;
+    const char *_password;
+    uint8_t _timeout = 30;
+    uint8_t _currentTimeout = 0;
+    std::function<void()> _cb;
 
-    void loop()
+    // Invoke callback on connection Change
+    ///////////////////////////////////
+    void changeMode(connection_e to)
     {
-        if (WiFi.status() != WL_CONNECTED)
-        {
-            DEBUG_PRINT(".");
-        }
+        connection = to;
+        if (_cb)
+            _cb();
     }
+    ///////////////////////////////////
 
 public:
-    Wifi() : timer(this, &Wifi::loop)
+    Wifi() : _timer(this, &Wifi::loop)
     {
-        // Do not set WiFi.mode() or disconnect() as it causes esp_wifi_init to be called twice
-        WiFi.setAutoReconnect(true);
-        timer.setInterval(1000);
         WiFi.scanNetworks(true);
+        _timer.setInterval(1000);
+        _timer.start();
     }
 
+    // Set callback for connection Change
+    ///////////////////////////////////
+    void conChange(std::function<void()> cb)
+    {
+        _cb = cb;
+    }
+    ///////////////////////////////////
+
+    // Connect to Wifi Network
+    ///////////////////////////////////
     void connect(const char *ssid, const char *password)
     {
-        // empty hostname causes mDNS name to be used (resulting in no .fritz.box)
-        // Known error Reason: 2 - AUTH_EXPIRE see:
-        // https://github.com/espressif/arduino-esp32/issues/2144
+        _ssid = ssid;
+        _password = password;
 
         WiFi.hostname("");
         WiFi.begin(ssid, password);
-        timer.start();
-        DEBUG_PRINTF("[Wifi] Connecting to WIFI: %s", ssid);
-    }
 
-    void disconnect()
-    {
-        WiFi.disconnect(true, true);
-        timer.stop();
-    }
+        DEBUG_PRINTLN(String("[Wifi] MAC Address: ") + WiFi.macAddress());
+        DEBUG_PRINTF("[Wifi] Connecting to WIFI: %s\n", ssid);
 
-    bool connected()
-    {
-        return WiFi.isConnected();
+        changeMode(CONNECTING);
     }
+    ///////////////////////////////////
 
+    // Create Access Point
+    ///////////////////////////////////
     void createAP(const char *ssid, const char *password = (const char *)__null)
     {
-        // softAPsetHostname() only works in pure AP mode
         WiFi.softAP(ssid, password);
         DEBUG_PRINTLN(String("[Wifi] Acces Point IP: ") + WiFi.softAPIP().toString());
     }
+    ///////////////////////////////////
 
+    // Scan for available networks
+    ///////////////////////////////////
     String scan()
     {
         String json = "[";
@@ -81,14 +93,54 @@ public:
         json += "]";
         return json;
     }
+    ///////////////////////////////////
 
-    IPAddress getAPIP()
+    void loop()
     {
-        return WiFi.softAPIP();
-    }
+        // Save Wifi Credentials on connection
+        ///////////////////////////////////
+        if (connection != ONLINE && WiFi.isConnected())
+        {
+            DEBUG_PRINTLN("[Wifi] Wifi successfully connected");
 
-    void destroyAP()
-    {
-        WiFi.softAPdisconnect(true);
+            strcpy(soft.wifi.ssid, _ssid);
+            strcpy(soft.wifi.password, _password);
+            soft.store();
+
+            _currentTimeout = 0;
+
+            changeMode(ONLINE);
+        }
+        ///////////////////////////////////
+
+        // Start AP if connection failed
+        ///////////////////////////////////
+        else if (connection == CONNECTING && !WiFi.isConnected())
+        {
+            _currentTimeout++;
+            if (_currentTimeout >= _timeout)
+            {
+                DEBUG_PRINTLN("[Wifi] Could not connect to Wifi.");
+
+                WiFi.disconnect(true, false);
+                if (!soft.wifi.ap_enabled)
+                {
+                    DEBUG_PRINTLN("[Wifi] Starting in AP mode instead.");
+                    soft.wifi.ap_enabled = true;
+                    soft.store();
+                    createAP("Winder", "");
+                }
+
+                changeMode(OFFLINE);
+                _currentTimeout = 0;
+            }
+        }
+        ///////////////////////////////////
+
+        else if (connection == ONLINE && !WiFi.isConnected())
+        {
+            DEBUG_PRINTLN("[Wifi] Network disconnected");
+            changeMode(OFFLINE);
+        }
     }
 };
