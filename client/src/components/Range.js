@@ -50,7 +50,7 @@ const Range = (props) => {
     }, []);
 
     return (
-        <div class="relative w-full mx-3">
+        <div class="relative w-full">
             <div>
                 <input type="range"
                     min={minRange}

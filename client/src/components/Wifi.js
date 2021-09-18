@@ -77,8 +77,8 @@ const Wifi = () => {
     }
 
     return (
-        <div class="flex items-center flex-grow">
-            <div class="bg-white w-1/3 mx-auto rounded-md my-auto p-5 text-center">
+        <div class="flex items-center flex-grow mx-4">
+            <div class="bg-white md:w-1/3 rounded-md w-full mx-auto my-auto py-5 md:px-5 text-center">
                 <h2 class="text-4xl mb-3">Connect to Wifi</h2>
                 {
                     loading

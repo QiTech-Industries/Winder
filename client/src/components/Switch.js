@@ -2,7 +2,7 @@ import Label from "./Label"
 
 const Switch = ({on, onChange, left, right}) => {
     return (
-        <div class='px-3 mb-6'>
+        <div class='mb-6'>
             <Label label="AP active" tooltip="Enable or disable the own wifi network of the winder." />
             <div class="flex justify-center items-center text-white cursor-pointer" onClick={e => onChange(!on)}>
                 <span class="">

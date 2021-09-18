@@ -7,7 +7,7 @@ const Stepper = ({ rpm = 0, name, active, data }) => {
     active = active == 0 ? false : true;
 
     return (
-        <div class={`bg-white py-4 ${showDiagram ? "" : "px-6"} rounded-xl w-72 text-center mt-8 m-4 relative`}>
+        <div class={`bg-white py-4 ${showDiagram ? "" : "px-6"} rounded-xl w-full text-center mb-4 relative`}>
             {
                 showDiagram
                     ?

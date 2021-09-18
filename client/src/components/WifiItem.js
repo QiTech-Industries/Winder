@@ -10,7 +10,7 @@ const WifiItem = ({ name, strength, type, setShowInput, showInput, connecting, s
                     showInput
                         ?
                         <form class="flex justify-between items-center">
-                            <div class="mx-5 text-2xl">
+                            <div class="mx-1 text-2xl">
                             <input onInput={e => setPassword(e.target.value)} class="w-full transition duration-200 p-2 h-10 bg-transparent border-b border-gray-900 focus:outline-none focus:border-b-2" type="text" placeholder="Password" />
                             </div>
                             <div class="w-1/3">
@@ -23,7 +23,7 @@ const WifiItem = ({ name, strength, type, setShowInput, showInput, connecting, s
                         </form>
                         :
                         <div class="flex justify-between items-center">
-                            <div class="mx-5 text-2xl">
+                            <div class="mx-2 text-2xl">
                                 {name != "" ? name : "Hidden Network"}
                             </div>
                             <div class="w-1/4">
