@@ -5,7 +5,7 @@ export default (config, env, helpers) => {
 	if (env.isProd) {
 		config.devtool = false; // disable sourcemaps
 	}
-	// change name of fonts
+	// change name of fonts to make filenames spiffs compatible
 	config.module.rules[7] = {
 		test: /\.(woff|svg|ttf)$/,
 		use: [
@@ -17,7 +17,7 @@ export default (config, env, helpers) => {
 			}
 		]
 	};
-	console.log(config.module.rules);
+	// console.log(config.module.rules);
 }
 
 import {
