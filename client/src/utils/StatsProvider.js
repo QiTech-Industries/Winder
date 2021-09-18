@@ -32,22 +32,38 @@ export const StatsProvider = ({ children }) => {
             s: 0,
             a: false,
         },
-        m: "off",//mode
+        m: "standby",//mode
+        w: 0, // total windings
+        l: 0, // total length
+        t: 0, // time
         e: null//error
     });
 
     useEffect(() => {
         if (!socket) return;
         socket.on("stats", data => {
+            if(stats.m != "winding" && data.m == "winding"){
+                data.t = Date.now();
+            }
             setStats(data);
 
-            const newHistory = { ...history };
+            let newHistory = { ...history };
             newHistory.spool.push(data.s.r);
             newHistory.ferrari.push(data.f.r);
             newHistory.puller.push(data.p.r);
+
+            if(newHistory.spool.length > 10){
+                newHistory.spool.shift();
+            }
             setHistory(newHistory);
         })
     }, []);
+
+    useEffect(() => {
+            if(stats.m == "winding"){
+                setStats({...data, t: Date.now()});
+            }
+    }, [stats.m]);
 
     return (
         <StatsContext.Provider value={{ stats, setStats, history }}>
