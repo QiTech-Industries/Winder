@@ -22,14 +22,25 @@ export const ConfigProvider = ({ children }) => {
         },
         ferrari_min: 65,
         ferrari_max: 130,
+        software: {
+            spiffs: {
+                version: "0.0.0",
+                build: "unknown",
+                date: "-"
+            },
+            firmware: {
+                version: "0.0.0",
+                build: "unknown",
+                date: "-"
+            }
+        },
     });
 
     useEffect(() => {
         if(!socket) return;
         socket.emit("config", undefined, data => {
-            console.log(data);
             setConfig(data);
-        })
+        });
     }, []);
 
     return (
