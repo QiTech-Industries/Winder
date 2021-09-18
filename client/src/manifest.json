@@ -1,6 +1,6 @@
 {
   "name": "JARVIS Winder",
-  "short_name": "Winder",
+  "short_name": "winder",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
