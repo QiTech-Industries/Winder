@@ -13,7 +13,7 @@ const Navbar = () => {
 
                 <a href="/">
                     <img
-                        class="h-14 ml-1"
+                        class="w-16 ml-1"
                         src="assets/icon.png"
                         alt="Industries Icon"
                     />
