@@ -1,4 +1,4 @@
-const Button = ({ secondary, onClick, children, disabled, submit }) => {
+const Button = ({ secondary, onClick, children, disabled, custom }) => {
     const handleClick = e => {
         console.log("click");
         e.stopPropagation();
@@ -20,7 +20,9 @@ const Button = ({ secondary, onClick, children, disabled, submit }) => {
                 :
                 "cursor-pointer"
             }
-        focus:outline-none w-full h-full transition duration-200 p-2 rounded-lg focus:ring-opacity-50 ring-inset`
+        focus:outline-none w-full h-full transition duration-200 p-2 rounded-lg focus:ring-opacity-50 ring-inset
+        ${custom}
+        `
         }
             disabled={disabled}
         >

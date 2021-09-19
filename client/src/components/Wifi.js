@@ -22,7 +22,6 @@ const Wifi = () => {
     ];
 
     useEffect(() => {
-        console.log("firstr scan");
         scan();
 
         return () => { socket.off("scan") };
@@ -33,25 +32,28 @@ const Wifi = () => {
         setNetworks([]);
         setShowInput(null);
         socket.emit("scan", undefined, data => {
-            if (data.length != 0) {
-                data = data.filter((thing, index, self) =>
-                index === self.findIndex((t) => (
-                  t.ssid === thing.ssid
-                ))
-              );
-                data = data.map((network, index) => {
+            let newNetworks = data.networks;
+            if (newNetworks.length != 0) {
+                // filter duplicate netwoks by ssid
+                newNetworks = newNetworks.filter((thing, index, self) =>
+                    index === self.findIndex((t) => (
+                        t.ssid === thing.ssid
+                    ))
+                );
+                // transform networks into new format
+                newNetworks = newNetworks.map((network, index) => {
                     return {
                         id: index + 1,
-                        name: network.ssid,
+                        name: network.ssid != "" ? network.ssid : "Hidden Network",
                         type: security[network.secure],
-                        strength: network.rssi > -70 ? 3 : (network.rssi > -85) ? 2 : 1
+                        strength: network.rssi > -70 ? 3 : (network.rssi > -85) ? 2 : 1,
+                        connected: data.current == network.ssid ? true : false
                     };
                 });
-                setNetworks(data);
+                setNetworks(newNetworks);
                 setLoading(false);
             }
             else {
-                console.log("rescan");
                 scan();
             }
         });
@@ -90,7 +92,7 @@ const Wifi = () => {
                                 {
                                     networks.map((network) => {
                                         return (
-                                            <WifiItem name={network.name} connecting={network.id === connecting} setPassword={setPassword} setConnecting={e => connect(network.id)} strength={network.strength} type={network.type} showInput={network.id === showInput} setShowInput={e => setShowInput(network.id)} />
+                                            <WifiItem connected={network.connected} name={network.name} connecting={network.id === connecting} setPassword={setPassword} setConnecting={e => connect(network.id)} strength={network.strength} type={network.type} showInput={network.id === showInput} setShowInput={e => setShowInput(network.id)} />
                                         );
                                     })
                                 }

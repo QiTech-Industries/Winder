@@ -43,13 +43,14 @@ wss.on('connection', function connection(ws) {
 
         switch (json.event) {
             case "scan":
-                send(json.event, [
-                    { rssi: -72, ssid: "Mein Netzwerk", secure: 1 },
-                    { rssi: -90, ssid: "Dein Netzwerk", secure: 0 },
-                    { rssi: -5, ssid: "Unser Netzwerk", secure: 2 },
-                    { rssi: -72, ssid: "Mein Netzwerk", secure: 1 },
-                    { rssi: -110, ssid: "Das Netzwerk", secure: 3 },
-                ], 1000);
+                send(json.event, {
+                    networks: [
+                        { rssi: -72, ssid: "Mein Netzwerk", secure: 1 },
+                        { rssi: -90, ssid: "Dein Netzwerk", secure: 0 },
+                        { rssi: -5, ssid: "Unser Netzwerk", secure: 2 },
+                        { rssi: -72, ssid: "Mein Netzwerk", secure: 1 },
+                        { rssi: -110, ssid: "Das Netzwerk", secure: 3 }],
+                        current: "Mein Netzwerk"}, 1000);
                 break;
 
             case "connect":
@@ -58,9 +59,9 @@ wss.on('connection', function connection(ws) {
 
             case "wind":
                 console.log(status.m);
-                if(status.m != "winding") status.m = "winding";
+                if (status.m != "winding") status.m = "winding";
                 else status.m = "power";
-            break;
+                break;
 
             case "config":
                 send(json.event, {
@@ -85,7 +86,7 @@ wss.on('connection', function connection(ws) {
     });
 
     setInterval(() => {
-        if(status.m == "winding"){
+        if (status.m == "winding") {
             status.f.a = true;
             status.f.r = Math.floor(Math.random() * 50);
             status.s.a = true;

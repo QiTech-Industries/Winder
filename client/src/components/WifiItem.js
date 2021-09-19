@@ -2,10 +2,10 @@ import Button from "./Button"
 import WifiIcon from "./WifiIcon"
 import Loading from "./Loading"
 
-const WifiItem = ({ name, strength, type, setShowInput, showInput, connecting, setConnecting, setPassword }) => {
+const WifiItem = ({ name, strength, type, setShowInput, showInput, connecting, setConnecting, setPassword, connected }) => {
     return (
         <div class="w-full h-20 my-2">
-            <Button onClick={setShowInput}>
+            <Button onClick={setShowInput} custom={connected ? "border-b-8 border-green-500" : null}>
                 {
                     showInput
                         ?
@@ -24,7 +24,7 @@ const WifiItem = ({ name, strength, type, setShowInput, showInput, connecting, s
                         :
                         <div class="flex justify-between items-center">
                             <div class="mx-2 text-2xl">
-                                {name != "" ? name : "Hidden Network"}
+                                {name}
                             </div>
                             <div class="w-1/4">
                                 <div>
