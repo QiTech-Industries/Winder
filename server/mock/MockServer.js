@@ -50,11 +50,16 @@ wss.on('connection', function connection(ws) {
                         { rssi: -5, ssid: "Unser Netzwerk", secure: 2 },
                         { rssi: -72, ssid: "Mein Netzwerk", secure: 1 },
                         { rssi: -110, ssid: "Das Netzwerk", secure: 3 }],
-                        current: "Mein Netzwerk"}, 1000);
+                    current: "Mein Netzwerk"
+                }, 1000);
                 break;
 
             case "connect":
-                send(json.event, "connected", 1000)
+                if (Math.random() < 0.5) {
+                    send(json.event, "connected", 1000)
+                    break;
+                }
+                send(json.event, "failed", 1000)
                 break;
 
             case "wind":

@@ -12,6 +12,7 @@ const Wifi = () => {
 
     const [showInput, setShowInput] = useState(null);
     const [connecting, setConnecting] = useState(null);
+    const [connected, setConnected] = useState(null);
     const [password, setPassword] = useState();
 
     const { socket } = useSocket();
@@ -42,20 +43,18 @@ const Wifi = () => {
                 );
                 // transform networks into new format
                 newNetworks = newNetworks.map((network, index) => {
+                    if(data.current == network.ssid ) setConnected(index + 1);
                     return {
                         id: index + 1,
                         name: network.ssid != "" ? network.ssid : "Hidden Network",
                         type: security[network.secure],
-                        strength: network.rssi > -70 ? 3 : (network.rssi > -85) ? 2 : 1,
-                        connected: data.current == network.ssid ? true : false
+                        strength: network.rssi > -70 ? 3 : (network.rssi > -85) ? 2 : 1
                     };
                 });
                 setNetworks(newNetworks);
                 setLoading(false);
             }
-            else {
-                scan();
-            }
+            else scan();
         });
     }
 
@@ -71,6 +70,7 @@ const Wifi = () => {
                 setLoading(false);
                 setShowInput(null);
                 toast.success(`Successfully connected to network '${name}'`);
+                setConnected(id);
             }
             else if (data === "failed") {
                 toast.error(`Connection to network '${name}' failed.`);
@@ -92,7 +92,7 @@ const Wifi = () => {
                                 {
                                     networks.map((network) => {
                                         return (
-                                            <WifiItem connected={network.connected} name={network.name} connecting={network.id === connecting} setPassword={setPassword} setConnecting={e => connect(network.id)} strength={network.strength} type={network.type} showInput={network.id === showInput} setShowInput={e => setShowInput(network.id)} />
+                                            <WifiItem connected={connected === network.id} name={network.name} connecting={network.id === connecting} setPassword={setPassword} setConnecting={e => connect(network.id)} strength={network.strength} type={network.type} showInput={network.id === showInput} setShowInput={e => setShowInput(network.id)} />
                                         );
                                     })
                                 }
