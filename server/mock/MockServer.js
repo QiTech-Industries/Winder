@@ -23,6 +23,8 @@ let status = {
     e: null//error
 };
 
+let network = "Mein Netzwerk";
+
 wss.on('connection', function connection(ws) {
     console.log("connection established");
 
@@ -50,13 +52,14 @@ wss.on('connection', function connection(ws) {
                         { rssi: -5, ssid: "Unser Netzwerk", secure: 2 },
                         { rssi: -72, ssid: "Mein Netzwerk", secure: 1 },
                         { rssi: -110, ssid: "Das Netzwerk", secure: 3 }],
-                    current: "Mein Netzwerk"
+                    current: network
                 }, 1000);
                 break;
 
             case "connect":
                 if (Math.random() < 0.5) {
-                    send(json.event, "connected", 1000)
+                    send(json.event, "connected", 1000);
+                    network = json.data.name;
                     break;
                 }
                 send(json.event, "failed", 1000)
