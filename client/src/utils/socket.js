@@ -1,6 +1,7 @@
 class Socket {
     constructor(url) {
         this.callbacks = [];
+        this.queue = [];
         this.connects = 0;
         this.reconnectMax = 10;
         this.reconnectInterval = 5e3;
@@ -16,6 +17,9 @@ class Socket {
         this.ws.onopen = e => {
             this.connects = 0;
             this.#run("open");
+            while (this.queue.length > 0) {
+                this.ws.send(this.queue.pop());
+            }
         }
         this.ws.onclose = e => {
             e.code === 1000 || e.code === 1001 || e.code === 1005 || this.#reconnect(); // only reconnect if close was unintentional
@@ -49,9 +53,19 @@ class Socket {
 
     emit(event, data = {}, cb) {
         this.on(event, cb);
-        if (this.ws && this.ws.readyState == 1) {
+        if (this.ws && this.ws.readyState === 1) {
             this.ws.send(JSON.stringify({ event, data }));
         }
+    }
+
+    buffer(event, data = {}, cb) {
+        this.on(event, cb);
+        if (!this.ws || this.ws.readyState !== 1) {
+            this.queue.push(JSON.stringify({ event, data }));
+            return;
+        }
+
+        this.ws.send(JSON.stringify({ event, data }));
     }
 
     #run(event, data) {
@@ -71,7 +85,6 @@ class Socket {
     }
 }
 
-//const socket = new Socket(`ws://${window.host}/ws`);
 //const socket = new Socket('ws://winder.local/ws');
 const socket = new Socket('ws://localhost:5000/ws');
 socket.open();
