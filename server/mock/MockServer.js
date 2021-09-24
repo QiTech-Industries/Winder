@@ -1,29 +1,104 @@
 const WebSocket = require('ws')
 
 const wss = new WebSocket.Server({ port: 5000 });
-let status = {
-    s: {//spool
-        r: 0,//rpm
-        s: 0,//stall
-        a: false,//active
-    },
-    p: {//puller
-        r: 0,
-        s: 0,
-        a: false,
-    },
-    f: {//ferrari
-        r: 0,
-        s: 0,
-        a: false,
-    },
-    m: "standby",//mode
-    w: 0, // total windings
-    l: 0, // total length
-    e: null//error
-};
-
+let status;
 let network = "Mein Netzwerk";
+
+const wind = () => {
+    status = {
+        s: {//spool
+            r: Math.floor(Math.random() * 50),//rpm
+            s: 0,//stall
+            a: true,//active
+        },
+        p: {//puller
+            r: Math.floor(Math.random() * 50),
+            s: 0,
+            a: true,
+        },
+        f: {//ferrari
+            r: Math.floor(Math.random() * 50),
+            s: 0,
+            a: true,
+        },
+        m: "winding",//mode
+        w: status.w + 1, // total windings
+        l: status.w + 1, // total length
+        e: null//error
+    };
+}
+
+const power = () => {
+    status = {
+        s: {//spool
+            r: 0,//rpm
+            s: 0,//stall
+            a: true,//active
+        },
+        p: {//puller
+            r: 0,
+            s: 0,
+            a: true,
+        },
+        f: {//ferrari
+            r: 0,
+            s: 0,
+            a: true,
+        },
+        m: "power",//mode
+        w: status.w, // total windings
+        l: status.w, // total length
+        e: null//error
+    };
+}
+
+const unwind = () => {
+    status = {
+        s: {//spool
+            r: 0,//rpm
+            s: 0,//stall
+            a: false,//active
+        },
+        p: {//puller
+            r: Math.floor(Math.random() * 50),
+            s: 0,
+            a: true,
+        },
+        f: {//ferrari
+            r: 0,
+            s: 0,
+            a: false,
+        },
+        m: "unwinding",//mode
+        w: 0, // total windings
+        l: 0, // total length
+        e: null//error
+    };
+}
+
+const standby = () => {
+    status = {
+        s: {//spool
+            r: 0,//rpm
+            s: 0,//stall
+            a: false,//active
+        },
+        p: {//puller
+            r: 0,
+            s: 0,
+            a: false,
+        },
+        f: {//ferrari
+            r: 0,
+            s: 0,
+            a: false,
+        },
+        m: "standby",//mode
+        w: 0, // total windings
+        l: 0, // total length
+        e: null//error
+    };
+}
 
 wss.on('connection', function connection(ws) {
     console.log("connection established");
@@ -67,8 +142,27 @@ wss.on('connection', function connection(ws) {
 
             case "wind":
                 console.log(status.m);
-                if (status.m != "winding") status.m = "winding";
-                else status.m = "power";
+                if(json.data.mpm != 0){
+                    status.m = "winding"      
+                }
+                else{
+                    status.m = "power";    
+                }
+                break;
+
+            case "unwind":
+                console.log(status.m);
+                if(json.data.mpm != 0){
+                    status.m = "unwinding"      
+                }
+                else{
+                    status.m = "power";    
+                }
+                break;
+
+            case "power":
+                if (status.m != "power") status.m = "power";
+                else status.m = "standby";
                 break;
 
             case "config":
@@ -94,19 +188,28 @@ wss.on('connection', function connection(ws) {
     });
 
     setInterval(() => {
-        if (status.m == "winding") {
-            status.f.a = true;
-            status.f.r = Math.floor(Math.random() * 50);
-            status.s.a = true;
-            status.s.r = Math.floor(Math.random() * 50);
-            status.p.a = true;
-            status.p.r = Math.floor(Math.random() * 50);
-            status.w = status.w + 1;
-            status.l = status.l + 1;
+        switch (status.m) {
+            case "winding":
+                wind();
+                break;
+
+            case "unwinding":
+                unwind();
+                break;
+
+            case "power":
+                power();
+                break;
+
+            default:
+                standby();
+                break;
         }
         send("stats", status);
     }, 1000);
 });
+
+standby();
 
 // Add hosts entry and create por forwarding with
 // netsh interface portproxy add v4tov4 listenport=80 listenaddress=127.65.43.21 connectport=5000 connectaddress=127.0.0.1
