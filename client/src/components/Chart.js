@@ -14,7 +14,7 @@ import { useEffect, useRef, useState } from 'preact/hooks'
 const config = {
     type: 'line',
     data: {
-        labels: Array.from({length: 50}, (_, i) => i + "s"),
+        labels: Array.from({ length: 50 }, (_, i) => i + "s"),
         datasets: [
             {
                 data: [],
@@ -82,7 +82,7 @@ const Chart = ({data}) => {
         if(!chartInstance) return;
         chartInstance.data.datasets[0].data = data;
         chartInstance.update();
-    }, [data[0], chartInstance]);
+    }, [data]);
 
     useEffect(() => {
         if (!chartContainer || !chartContainer.current) return;

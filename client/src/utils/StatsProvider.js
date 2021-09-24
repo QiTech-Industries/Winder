@@ -1,5 +1,5 @@
 import { createContext } from 'preact';
-import { useContext, useEffect, useState } from 'preact/hooks'
+import { useContext, useEffect, useState, useRef } from 'preact/hooks'
 import { useSocket } from './SocketProvider';
 
 const StatsContext = createContext();
@@ -10,13 +10,13 @@ export const useStats = () => {
 
 export const StatsProvider = ({ children }) => {
     const { socket } = useSocket();
-    const [history, setHistory] = useState({
-        spool: [],
-        ferrari: [],
-        puller: []
+    const [charts, setCharts] = useState({
+        p: [],
+        s: [],
+        f: []
     });
 
-    const [stats, setStats] = useState({
+    const stats = useRef({
         s: {//spool
             r: 0,//rpm
             s: 0,//stall
@@ -42,31 +42,31 @@ export const StatsProvider = ({ children }) => {
     useEffect(() => {
         if (!socket) return;
         socket.on("stats", data => {
-            if(stats.m != "winding" && data.m == "winding"){
+            if (stats.current.m != "winding" && data.m == "winding") {
                 data.t = Date.now();
             }
-            setStats(data);
-
-            let newHistory = { ...history };
-            newHistory.spool.push(data.s.r);
-            newHistory.ferrari.push(data.f.r);
-            newHistory.puller.push(data.p.r);
-
-            if(newHistory.spool.length > 10){
-                newHistory.spool.shift();
-            }
-            setHistory(newHistory);
-        })
+            stats.current = data;
+        });
     }, []);
 
+    // Update chart data every second
     useEffect(() => {
-            if(stats.m == "winding"){
-                setStats({...data, t: Date.now()});
-            }
-    }, [stats.m]);
+        const interval = setInterval(() => {
+            const newCharts = {};
+
+            newCharts.p = [stats.current.p.r, ...charts.p].slice(0,50);
+            newCharts.f = [stats.current.f.r, ...charts.f].slice(0,50);
+            newCharts.s = [stats.current.s.r, ...charts.s].slice(0,50);
+
+            console.log(newCharts);
+
+            setCharts(newCharts);
+        }, 1000);
+        return () => { clearInterval(interval) };
+    }, [charts])
 
     return (
-        <StatsContext.Provider value={{ stats, setStats, history }}>
+        <StatsContext.Provider value={{ stats: stats.current, charts }}>
             {children}
         </StatsContext.Provider>
     )
