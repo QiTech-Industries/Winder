@@ -37,8 +37,7 @@ export const ConfigProvider = ({ children }) => {
     });
 
     useEffect(() => {
-        if(!socket) return;
-        socket.emit("config", undefined, data => {
+        socket.buffer("config", undefined, data => {
             setConfig(data);
         });
     }, []);

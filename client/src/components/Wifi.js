@@ -32,7 +32,7 @@ const Wifi = () => {
         setLoading(true);
         setNetworks([]);
         setShowInput(null);
-        socket.emit("scan", undefined, data => {
+        socket.buffer("scan", undefined, data => {
             let newNetworks = data.networks;
             if (newNetworks.length != 0) {
                 // filter duplicate netwoks by ssid
