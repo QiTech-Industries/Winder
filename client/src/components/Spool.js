@@ -20,7 +20,7 @@ const Spool = () => {
 
     return (
         <div class="bg-gray-200 w-full h-30 rounded-xl p-4 mb-4 flex flex-wrap md:flex-nowrap max-w-4xl mx-auto">
-            <div class="flex justify-center place-items-center flex-wrap">
+            <div class="flex justify-center place-items-center flex-wrap mr-5">
             <h3 class="text-2xl mb-2 mx-3 font-bold text-center">Status</h3>
             <img class="h-12 md:h-64 col-span-2" src="/assets/spool.svg" />
             </div>
