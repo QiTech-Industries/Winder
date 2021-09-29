@@ -52,7 +52,7 @@ const Range = (props) => {
                 </div>
             </div>
 
-            <div class="pt-2 pb-4 w-full md:w-44">
+            <div class="w-full md:w-44 py-4">
                 <Number value={min.value} onChange={minTrigger} unit="m/min" />
             </div>
         </div>
