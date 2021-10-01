@@ -53,7 +53,7 @@ const Range = (props) => {
             </div>
 
             <div class="w-full md:w-44 py-4">
-                <Number value={min.value} onChange={minTrigger} unit="m/min" />
+                <Number value={min.value} onChange={minTrigger} step={props.step} unit="m/min" />
             </div>
         </div>
     )
