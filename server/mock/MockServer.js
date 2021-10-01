@@ -2,7 +2,6 @@ const WebSocket = require('ws')
 
 const wss = new WebSocket.Server({ port: 5000 });
 let status;
-let network = "Mein Netzwerk";
 
 const wind = () => {
     status = {
@@ -100,6 +99,32 @@ const standby = () => {
     };
 }
 
+const config = {
+    wifi: {
+        ssid: "Mein Netzwerk",
+        password: "PeterPan",
+        ap_ssid: "Jarvis Winder",
+        ap_password: "",
+        friendly_name: "Jarvis Winder",
+        mdns_name: "winder",
+        ap_enabled: true,
+    },
+    ferrari_min: 65,
+    ferrari_max: 130,
+    software: {
+        spiffs: {
+            version: "Mock Beta",
+            build: "011021",
+            date: "01.10.2021"
+        },
+        firmware: {
+            version: "Mock Beta",
+            build: "011021",
+            date: "01.10.2021"
+        }
+    },
+};
+
 wss.on('connection', function connection(ws) {
     console.log("connection established");
 
@@ -127,14 +152,14 @@ wss.on('connection', function connection(ws) {
                         { rssi: -5, ssid: "Unser Netzwerk", secure: 2 },
                         { rssi: -72, ssid: "Mein Netzwerk", secure: 1 },
                         { rssi: -110, ssid: "Das Netzwerk", secure: 3 }],
-                    current: network
+                    current: config.wifi.ssid
                 }, 1000);
                 break;
 
             case "connect":
                 if (Math.random() < 0.5) {
                     send(json.event, "connected", 1000);
-                    network = json.data.name;
+                    config.wifi.ssid = json.data.name;
                     break;
                 }
                 send(json.event, "failed", 1000)
@@ -142,21 +167,21 @@ wss.on('connection', function connection(ws) {
 
             case "wind":
                 console.log(status.m);
-                if(json.data.mpm != 0){
-                    status.m = "winding"      
+                if (json.data.mpm != 0) {
+                    status.m = "winding"
                 }
-                else{
-                    status.m = "power";    
+                else {
+                    status.m = "power";
                 }
                 break;
 
             case "unwind":
                 console.log(status.m);
-                if(json.data.mpm != 0){
-                    status.m = "unwinding"      
+                if (json.data.mpm != 0) {
+                    status.m = "unwinding"
                 }
-                else{
-                    status.m = "power";    
+                else {
+                    status.m = "power";
                 }
                 break;
 
@@ -166,19 +191,7 @@ wss.on('connection', function connection(ws) {
                 break;
 
             case "config":
-                send(json.event, {
-                    wifi: {
-                        ssid: "Mein Netzwek",
-                        password: "secure",
-                        ap_ssid: "Mein Winder",
-                        ap_password: "asdasdasd",
-                        friendly_name: "CoolerName",
-                        mdns_name: "dsfsdfsdf",
-                        ap_enabled: false,
-                    },
-                    ferrari_min: 50,
-                    ferrari_max: 100,
-                }, 500);
+                send(json.event, config, 500);
                 break;
 
             default:
