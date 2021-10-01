@@ -42,25 +42,31 @@ export const StatsProvider = ({ children }) => {
     useEffect(() => {
         if (!socket) return;
         socket.on("stats", data => {
-            if (stats.current.m != "winding" && data.m == "winding") {
-                data.t = Date.now();
-            }
+            console.log(stats.current);
+            data.t = stats.current.t;
             stats.current = data;
         });
     }, []);
 
-    // Update chart data every second
     useEffect(() => {
         const interval = setInterval(() => {
+            // Update chart data every second
             const newCharts = {};
 
-            newCharts.p = [stats.current.p.r, ...charts.p].slice(0,50);
-            newCharts.f = [stats.current.f.r, ...charts.f].slice(0,50);
-            newCharts.s = [stats.current.s.r, ...charts.s].slice(0,50);
-
-            console.log(newCharts);
+            newCharts.p = [stats.current.p.r, ...charts.p].slice(0, 50);
+            newCharts.f = [stats.current.f.r, ...charts.f].slice(0, 50);
+            newCharts.s = [stats.current.s.r, ...charts.s].slice(0, 50);
 
             setCharts(newCharts);
+
+            // Increment timer while winding
+            if (stats.current.m == "winding") {
+                stats.current.t++;
+            }
+            // Reset timer if windings are reset
+            else if (stats.current.w == 0) {
+                stats.current.t = 0;
+            }
         }, 1000);
         return () => { clearInterval(interval) };
     }, [charts])

@@ -12,7 +12,7 @@ const Spool = () => {
     const spoolWidth = config.ferrari_max - config.ferrari_min;
     const windings = stats.w;
     const meters = stats.w;
-    const time = Date.now() - stats.t;
+    const time = stats.t;
     const windingsPerLayer = spoolWidth/filamentDiameter;
 
     const layerCount = Math.floor(windings / windingsPerLayer);
