@@ -60,12 +60,14 @@ class Socket {
 
     buffer(event, data = {}, cb) {
         this.on(event, cb);
+        const json = JSON.stringify({ event, data });
         if (!this.ws || this.ws.readyState !== 1) {
-            this.queue.push(JSON.stringify({ event, data }));
+            !this.queue.includes(json) ? this.queue.push(json) : null;
+            console.log(this.queue);
             return;
         }
 
-        this.ws.send(JSON.stringify({ event, data }));
+        this.ws.send(json);
     }
 
     #run(event, data) {
