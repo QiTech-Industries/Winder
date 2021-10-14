@@ -13,6 +13,8 @@ void setup()
                     .gear_ratio = 1,
                     .steps_per_rotation = 200,
                     .mm_per_rotation = 108,
+                    .default_acceleration = 10000,
+                    .stall = 7,
                     .pins = {
                         .en = 12,
                         .dir = 27,
@@ -23,7 +25,7 @@ void setup()
                 },
                 .ferrari = {
 
-                    .max_current = 700, .microsteps = 16, .gear_ratio = 1, .steps_per_rotation = 200, .mm_per_rotation = 8, .pins = {
+                    .max_current = 700, .microsteps = 16, .gear_ratio = 1, .steps_per_rotation = 200, .mm_per_rotation = 8, .default_acceleration = 10000, .stall = 7, .pins = {
                                                                                                                                 .en = 12,
                                                                                                                                 .dir = 14,
                                                                                                                                 .step = 17,
@@ -33,8 +35,8 @@ void setup()
                 },
                 .spool = {
 
-                    .max_current = 700, .microsteps = 16, .gear_ratio = 1 / 13.734, .steps_per_rotation = 200,
-                    .mm_per_rotation = 550, // 310 if spool is not filles up
+                    .max_current = 700, .microsteps = 16, .gear_ratio = 5.18, .steps_per_rotation = 200,
+                    .mm_per_rotation = 550, .default_acceleration = 10000, .stall = 40, // 310 if spool is not filles up
                     .pins = {
                         .en = 12,
                         .dir = 16,
@@ -50,8 +52,8 @@ void setup()
             }},
         .soft = {
             .wifi = {
-                "WLAN-31CC81",
-                "5825693716601501",
+                "QiTech Konferenz",
+                "Malte100%",
                 "Jarvis Winder",
                 "",
                 "Jarvis Winder",
@@ -62,8 +64,8 @@ void setup()
                 .spiffs = {"0.0.1", "1209211146"},
                 .firmware = {"0.0.1", "1209211146"},
             },
-            .ferrari_min = 68,
-            .ferrari_max = 130,
+            .ferrari_min = 70,
+            .ferrari_max = 115,
         }};
     JarvisWinder.setup(conf);
 }

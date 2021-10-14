@@ -15,7 +15,7 @@ enum mode_e
 {
     STANDBY,
     POWER,
-    HOMING,
+    PULLING,
     CALIBRATING,
     WINDING,
     UNWINDING,
@@ -37,6 +37,8 @@ struct stepper_s
     float_t gear_ratio;
     uint16_t steps_per_rotation;
     uint16_t mm_per_rotation;
+    uint16_t default_acceleration;
+    uint8_t stall;
     struct Pins
     {
         uint8_t en;
