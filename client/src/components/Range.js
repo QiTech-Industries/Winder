@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "preact/hooks"
 import Number from "./Number"
+import Text from "./Text";
 
 const Range = (props) => {
 
@@ -19,12 +20,12 @@ const Range = (props) => {
 
     // needed for debouncing slider inside Timeout
     const valRef = useRef();
-    
+
     const minTrigger = (input = min.value) => {
         let value = Math.min(input >= minRange ? input : minRange, max.value - minSpan);
         let thumb = ((value - minRange) / (maxRange - minRange)) * 100;
         setMin({ ...min, value, thumb });
-       
+
 
         valRef.current = value;
         setTimeout(value => {
@@ -36,7 +37,7 @@ const Range = (props) => {
         let value = Math.max(input <= maxRange ? input : maxRange, min.value + minSpan);
         let thumb = 100 - (((value - minRange) / (maxRange - minRange)) * 100);
         setMax({ ...max, value, thumb });
-        
+
         valRef.current = value;
         setTimeout(value => {
             if (value == valRef.current) props.maxChange(value);
@@ -44,10 +45,16 @@ const Range = (props) => {
     };
 
     useEffect(() => {
-        minTrigger();
-        maxTrigger();
+        minTrigger(props.minThumb);
+        maxTrigger(props.maxThumb);
         valRef.current = null;
     }, []);
+
+    useEffect(() => {
+        minTrigger(props.minThumb);
+        maxTrigger(props.maxThumb);
+        valRef.current = null;
+    }, [props.minThumb, props.maxThumb]);
 
     return (
         <div class="relative w-full">

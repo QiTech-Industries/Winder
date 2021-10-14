@@ -9,26 +9,35 @@ import { useSocket } from "../utils/SocketProvider"
 import { useToast } from '../utils/ToastProvider'
 
 const Config = () => {
-    const { config } = useConfig();
+    const { config, setConfig } = useConfig();
     const { socket } = useSocket();
     const { toast } = useToast();
 
     const calibrate = (position, startPos) => {
-        console.log({ position, startPos });
+        const newConfig = {...config};
+        if(startPos){
+            newConfig.wifi.ferrari_min = position;
+        }
+        else{
+            newConfig.wifi.ferrari_max = position;
+        }
+        setConfig(newConfig);
         socket.emit("calibrate", { position, startPos }, () => {
         });
     }
 
     const updateWifi = (key, val) => {
-        console.log("change config");
+        const newConfig = {...config};
+        newConfig.wifi[key] = val;
+        setConfig(newConfig);
         const wifi = {
-            mdns_name: config.wifi.mdns_name,
-            ap_ssid: config.wifi.ap_ssid,
-            ap_enabled: config.wifi.ap_enabled,
+            mdns_name: newConfig.wifi.mdns_name,
+            ap_ssid: newConfig.wifi.ap_ssid,
+            ap_enabled: newConfig.wifi.ap_enabled
         }
-        wifi[key] = val;
-        socket.emit("modify", wifi, () => { });
-        toast.success("Configuration successfully updated.");
+        socket.emit("modify", wifi, () => {
+            toast.success("Configuration successfully updated. Please restart.");
+        });
     }
 
     return (
@@ -36,7 +45,7 @@ const Config = () => {
             <Section title="WIFI">
                 <Text onInput={val => updateWifi("mdns_name", val.toLowerCase())} placeholder="winder" value={config.wifi.mdns_name} tooltip="This will change the URL of the webinterface." label="Device Name" unit=".local" />
                 <Text onInput={val => updateWifi("ap_ssid", val)} placeholder="Jarvis Winder" value={config.wifi.ap_ssid} tooltip="Name of the network the winder creates." label="Access Point Name" />
-                <Switch on={config.wifi.ap_enabled} left="No" right="Yes" />
+                <Switch on={config.wifi.ap_enabled} onChange={val => updateWifi("ap_enabled", val)} left="No" right="Yes" />
             </Section>
             <Section title="SPOOL CALIBRATION">
                 <div class="w-full text-black">
