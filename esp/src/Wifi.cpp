@@ -6,7 +6,7 @@ private:
     TimerForMethods<Wifi> _timer;
     const char *_ssid;
     const char *_password;
-    uint8_t _timeout = 30;
+    uint8_t _timeout = 15;
     uint8_t _currentTimeout = 0;
     std::function<void()> _cb;
 
@@ -66,31 +66,30 @@ public:
     ///////////////////////////////////
     String scan()
     {
-        String json = "[";
         int n = WiFi.scanComplete();
         if (n == -2)
         {
             WiFi.scanNetworks(true);
+            return String("{\"networks\": []}");
         }
-        else if (n)
+
+        String json = "{\"networks\":[";
+        for (int i = 0; i < n; ++i)
         {
-            for (int i = 0; i < n; ++i)
-            {
-                if (i)
-                    json += ",";
-                json += "{";
-                json += "\"rssi\":" + String(WiFi.RSSI(i));
-                json += ",\"ssid\":\"" + WiFi.SSID(i) + "\"";
-                json += ",\"secure\":" + String(WiFi.encryptionType(i));
-                json += "}";
-            }
-            WiFi.scanDelete();
-            if (WiFi.scanComplete() == -2)
-            {
-                WiFi.scanNetworks(true);
-            }
+            if (i)
+                json += ",";
+            json += "{";
+            json += "\"rssi\":" + String(WiFi.RSSI(i));
+            json += ",\"ssid\":\"" + WiFi.SSID(i) + "\"";
+            json += ",\"secure\":" + String(WiFi.encryptionType(i));
+            json += "}";
         }
-        json += "]";
+        WiFi.scanDelete();
+        if (WiFi.scanComplete() == -2)
+        {
+            WiFi.scanNetworks(true);
+        }
+        json += "],\"current\":" + (WiFi.isConnected() ? ("\"" + String(soft.wifi.ssid) + "\"") : "null") + "}";
         return json;
     }
     ///////////////////////////////////
@@ -121,8 +120,20 @@ public:
             if (_currentTimeout >= _timeout)
             {
                 DEBUG_PRINTLN("[Wifi] Could not connect to Wifi.");
+                changeMode(OFFLINE);
+                _currentTimeout = 0;
 
-                WiFi.disconnect(true, false);
+                // connect to previous network if new failed
+                if (soft.wifi.ssid != _ssid)
+                {
+                    connect(soft.wifi.ssid, soft.wifi.password);
+                }
+                else
+                {
+                    WiFi.disconnect(true, false);
+                }
+
+                // Start emergency Access Point
                 if (!soft.wifi.ap_enabled)
                 {
                     DEBUG_PRINTLN("[Wifi] Starting in AP mode instead.");
@@ -130,9 +141,6 @@ public:
                     soft.store();
                     createAP("Winder", "");
                 }
-
-                changeMode(OFFLINE);
-                _currentTimeout = 0;
             }
         }
         ///////////////////////////////////
