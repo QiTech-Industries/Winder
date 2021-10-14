@@ -23,16 +23,20 @@ private:
         float rpm;
         uint16_t stall;
         uint8_t active;
+        float rotations;
         String error;
     };
 
     std::vector<queueItem_s> queue;
     uint16_t queueCurrent;
+
     bool stopOnStall = false;
     bool adjustSpeedToStall = false;
     bool stopped = true;
     int ignore = 25;
-    uint16_t windAccel = 1000;
+    uint32_t totalTicks = 0;
+    uint32_t lastTicks = 0;
+    bool isHomed = false;
 
     uint32_t microsteps_per_rotation;
 
@@ -49,12 +53,12 @@ private:
             queueItem_s item = queue[queueCurrent];
 
             // DEFAULT SETTINGS
-            stepper->forceStopAndNewPosition(stepper->getCurrentPosition()); //Stop RAMPS generator
+            stepper->forceStopAndNewPosition(stepper->getCurrentPosition()); //Stop RAMP generator
             stopOnStall = false;                                             // StallGuard deactivated
             driver->toff(1);                                                 // Activate Stepper driver
             adjustSpeedToStall = false;                                      //
             stopped = false;
-            stepper->setAcceleration(1000);
+            stepper->setAcceleration(config.default_acceleration);
 
             // special case: jumping back in queue can not be handled in switch
             if (item.command == LOOP)
@@ -70,6 +74,7 @@ private:
                 break;
             case HOME:
                 stopOnStall = true;
+                isHomed = true;
                 rotate(item.rps);
                 break;
             case POSITION:
@@ -77,7 +82,6 @@ private:
                 break;
             case ADJUST:
                 adjustSpeedToStall = true;
-                stepper->setAcceleration(300);
                 rotate(item.rps);
                 break;
             default:
@@ -94,9 +98,9 @@ private:
 
     bool moveFinished()
     {
+        //DEBUG_PRINTF("STATS: %i %i %i %i \n", stepper->isRunningContinuously(), stepper->isMotorRunning(), stepper->isRampGeneratorActive(), stepper->isQueueEmpty());
         if (!stepper->isMotorRunning())
         {
-            //DEBUG_PRINTF("STATS: %i %i %i \n", stepper->isMotorRunning(), stepper->isRampGeneratorActive(), stepper->isQueueEmpty());
             return true;
         }
         else if (stopOnStall)
@@ -116,6 +120,7 @@ private:
             if (drv_status.sg_result < calcLow)
             {
                 stepper->forceStopAndNewPosition(0);
+                Serial.println("HOMING FINSIHED");
                 return true;
             }
         }
@@ -127,32 +132,42 @@ private:
     {
         if (adjustSpeedToStall)
         {
-           /* if (windAccel >= 200)
-            {
-                windAccel = windAccel * 0.99;
-                stepper->setAcceleration(windAccel);
-                stepper->applySpeedAcceleration();
-            }*/
-
             uint32_t speed = getSpeedUs();
 
             DRV_STATUS_t drv_status{0};
             drv_status.sr = driver->DRV_STATUS();
+            Serial.println(drv_status.sg_result);
 
-            // defines range where stall value should be in
-            float calcMiddle = 0.19424 * speed + 340;
-            float calcLow = 0.19424 * speed + 239;
-            float calcHigh = 0.19424 * speed + 440;
+            // last speed value is dummy to prevent i+1 errors
+            //uint16_t speeds[]{1365, 632, 411, 305, 242, 201, 171, 149, 133, 119, 108, 99, 91, 85, 79, 74, 69, 66, 62, 59, 0};
+            //float curve[]{934.33, 730.73, 585.53, 526.87, 505.13, 513.60, 565.13, 510.80, 438.00, 424.00, 372.33, 281, 235.6, 195, 157, 108.67, 66.2, 45.4, 16.6, 1, 0};
 
-            DEBUG_PRINTF("%u %f %f %f\n", drv_status.sg_result, calcLow, calcMiddle, calcHigh);
+            float curve[]{784.6,705.5,608.9,574.3,611.6,559.7,556.7,641.3,528.5,532,605.1,622.6,597.1,553.4,585.9,568.4,560,537.9,557,517.9,510.9,546.5,564.3,515.3,496,497.4,498,479.4,507.4,436.5,434.7,423.3,348.4,360.7,330.9,273.8,268.2,273.7,255.9,226.8};
+            uint16_t speeds[]{3619,1809,1206,904,723,603,517,452,402,361,329,301,278,258,241,226,212,201,190,180,172,164,157,150,144,139,134,129,124,120,116,113,109,106,103,100,97,95,92,90,0};
+            
+            Serial.print(drv_status.sg_result);
+            Serial.print(" : ");
+            Serial.println(speed);
 
-            if (drv_status.sg_result < calcLow)
+            for (int8_t i = 0; i < 40; i++)
             {
-                setSpeed(0.015); //0.5m/s with filled up spool
-            }
-            else if (drv_status.sg_result > calcHigh)
-            {
-                setSpeed(0.78); // 0.5s per rotation
+                if ((speeds[i] >= speed && speeds[i + 1] < speed) || speed >= speeds[0])
+                {
+                    if (curve[i] > drv_status.sg_result)
+                    {
+                        // Load too high, slow down
+                        Serial.print("slower : ");
+                        Serial.println(curve[i]);
+                        setSpeedUs(min(speed + 20, speeds[0]));
+                    }
+                    else
+                    {
+                        // Load too low, speed up
+                        Serial.println("faster");
+                        setSpeedUs(max(speed - 20, speeds[39]));
+                    }
+                    break;
+                }
             }
         }
     }
@@ -224,14 +239,14 @@ public:
         engine.init();
 
         this->config = config;
-        this->microsteps_per_rotation = config.steps_per_rotation * config.microsteps / config.gear_ratio;
+        this->microsteps_per_rotation = config.steps_per_rotation * config.microsteps * config.gear_ratio;
 
         // DRIVER config
-        driver->toff(0);
+        driver->toff(1);
         driver->blank_time(5);
         driver->rms_current(config.max_current);
         driver->microsteps(config.microsteps);
-        driver->sgt(7);
+        driver->sgt(config.stall);
         driver->sfilt(true);
 
         // StallGuard/Coolstep config
@@ -247,7 +262,6 @@ public:
             stepper->setDirectionPin(config.pins.dir);
             stepper->setEnablePin(config.pins.en);
             stepper->setAutoEnable(true);
-            stepper->setAcceleration(1000);
         }
     }
 
@@ -270,22 +284,35 @@ public:
         stop();
         driver->toff(0);
         queue.clear();
+        totalTicks = 0;
     }
 
     void on()
     {
+        stop();
         driver->toff(1);
+        queue.clear();
+        queueCurrent = 0;
+        stopped = true;
     }
 
     void setSpeed(float rps)
     {
-        DEBUG_PRINTF("SPEED %f", rps);
         stepper->setSpeedInHz((int)microsteps_per_rotation * abs(rps));
         stepper->applySpeedAcceleration();
     }
 
     void position(float rps, uint16_t position)
     {
+        // do not allow setting fixed end position if currently homing
+        // update next command instead if it is of type POSITION
+        if(stopOnStall){
+            if(queue[queueCurrent].command == POSITION){
+                queue[queueCurrent].mm = position;
+            }
+            return;
+        }
+        
         int32_t pos = position * microsteps_per_rotation / config.mm_per_rotation;
         stepper->setSpeedInHz((int)microsteps_per_rotation * abs(rps));
         stepper->moveTo(pos);
@@ -306,7 +333,7 @@ public:
 
     status_s getStatus()
     {
-        status_s stats{0,0,0,""};
+        status_s stats{0, 0, 0, 0, ""};
         DRV_STATUS_t drv_status{0};
         drv_status.sr = driver->DRV_STATUS();
 
@@ -333,13 +360,18 @@ public:
         if (stepper->getCurrentSpeedInUs())
         {
             stats.rpm = (float)60000000 / stepper->getCurrentSpeedInUs() / microsteps_per_rotation;
-            DEBUG_PRINTLN(stats.rpm);
         }
 
         stats.stall = drv_status.sg_result;
         stats.active = driver->toff() == 0 ? 0 : 1;
+        stats.rotations = totalTicks / microsteps_per_rotation;
 
         return stats;
+    }
+
+    bool getHomed()
+    {
+        return isHomed;
     }
     //
 

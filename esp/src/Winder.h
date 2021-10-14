@@ -9,25 +9,14 @@ Wifi wifi;
 Webserver server;
 Stepper ferrari, spool, puller;
 Timer timer, report;
+float_t spoolSpeedToFerrariSpeed;
+bool ferrariReady = false;
 
 void printBanner() { DEBUG_PRINTLN("\n   ___                  _       _    _ _           _           \n  |_  |                (_)     | |  | (_)         | |          \n    | | __ _ _ ____   ___ ___  | |  | |_ _ __   __| | ___ _ __ \n    | |/ _` | '__\\ \\ / / / __| | |/\\| | | '_ \\ / _` |/ _ \\ '__|\n/\\__/ / (_| | |   \\ V /| \\__ \\ \\  /\\  / | | | | (_| |  __/ |   \n\\____/ \\__,_|_|    \\_/ |_|___/  \\/  \\/|_|_| |_|\\__,_|\\___|_|   \n"); }
 
-void unwind(float mpm = 1)
+void power(bool on)
 {
-  float speed = mpm * 1000 / hard.motors.puller.mm_per_rotation / 60;
-  if (mode == UNWINDING)
-  {
-    puller.setSpeed(speed);
-    return;
-  }
-
-  mode = UNWINDING;
-  puller.add({.rps = -speed, .mm = 0, ROTATE});
-}
-
-void power()
-{
-  if (mode == STANDBY)
+  if (on)
   {
     ferrari.on();
     spool.on();
@@ -43,91 +32,109 @@ void power()
   }
 }
 
-void home()
+bool isMode(mode_e nextMode)
 {
-  mode = HOMING;
-  ferrari.add({.rps = -1, .mm = 0, HOME, []
-               {
-                 DEBUG_PRINTLN("HOMING FINISHED");
-                 mode = STANDBY;
-               }});
+  // Mode does not change
+  if (mode == nextMode)
+  {
+    return true;
+  }
+  // New mode is set
+  else
+  {
+    power(true); // Always reset Motors on Mode change
+    timer.reset();
+    mode = nextMode;
+    return false;
+  }
+}
+
+void unwind(float mpm)
+{
+  float speed = mpm * 1000 / hard.motors.puller.mm_per_rotation / 60;
+
+  isMode(UNWINDING);
+  spool.off();
+  puller.add({.rps = -speed, .mm = 0, ROTATE});
+}
+
+void pull(float mpm)
+{
+  float speed = mpm * 1000 / hard.motors.puller.mm_per_rotation / 60;
+  ferrariReady = false;
+
+  isMode(PULLING);
+  puller.add({.rps = speed, .mm = 0, ROTATE});
+  if (!ferrari.getHomed())
+  {
+    ferrari.add({.rps = -2, .mm = 0, HOME});
+  }
+  ferrari.add({.rps = 2, .mm = soft.ferrari_max, POSITION, []{
+    ferrariReady = true;
+  }});
 }
 
 void calibrate(uint16_t position, bool startPos = true)
 {
-  if (mode == HOMING || position == 0)
-    return;
-
-  if (startPos)
+  if (isMode(CALIBRATING))
   {
-    soft.ferrari_min = position;
+    ferrari.position(2, position);
   }
   else
   {
-    soft.ferrari_max = position;
-  }
-  soft.store();
+    if (!ferrari.getHomed())
+      ferrari.add({.rps = -2, .mm = 0, HOME});
 
-  if (mode == CALIBRATING)
-  {
-    ferrari.position(2, position);
-    return;
+    ferrari.add({2, position, POSITION, []
+                 {
+                   isMode(POWER);
+                 }});
   }
-  mode = CALIBRATING;
-  ferrari.add({2, position, POSITION});
+
+  if (startPos)
+    soft.ferrari_min = position;
+  else
+    soft.ferrari_max = position;
+  soft.store();
 }
 
 void updateFerrariSpeed()
 {
-  //SPEED CALCULATIONS
-  float_t spoolWidth = (soft.ferrari_max - soft.ferrari_min);
-  // tested: when winded filament width = 2.1mm theory 1.75mm
-  float_t spoolMotorRotationsPerLayer = spoolWidth / 1.9 / hard.motors.spool.gear_ratio;
-  float_t ferrariMotorRotationsPerLayer = spoolWidth / hard.motors.ferrari.mm_per_rotation;
-  float_t spoolSpeedToFerrariSpeed = spoolMotorRotationsPerLayer / ferrariMotorRotationsPerLayer;
-
   ferrari.setSpeedUs(spool.getSpeedUs() * spoolSpeedToFerrariSpeed);
-  //
 };
 
-void wind(float mpm, bool start = false)
+void wind(float mpm)
 {
-  if (mode == HOMING)
-    return;
-  if (!start)
-  {
-    float speed = mpm * 1000 / hard.motors.puller.mm_per_rotation / 60;
-    if (mode != WINDING)
-    {
-      mode = WINDING;
-      puller.add({.rps = speed, .mm = 0, ROTATE});
-    }
-    puller.setSpeed(speed);
-    return;
-  }
+  if(!ferrariReady) return;
   mode = WINDING;
+  float speed = mpm * 1000 / hard.motors.puller.mm_per_rotation / 60;
 
   // START RUNNING the motors
-  ferrari.add({.rps = 1, .mm = soft.ferrari_max, POSITION, []
-               {
-                 ferrari.add({.rps = 1, .mm = soft.ferrari_min, POSITION});
-                 ferrari.add({.rps = 1, .mm = soft.ferrari_max, POSITION});
-                 ferrari.loop(2);
-                 spool.add({.rps = 0.25, .mm = 0, ADJUST});
+  ferrari.add({.rps = 1, .mm = soft.ferrari_min, POSITION});
+  ferrari.add({.rps = 1, .mm = soft.ferrari_max, POSITION});
+  ferrari.loop(2);
+  spool.add({.rps = -3, .mm = 0, ADJUST});
+  puller.add({.rps = speed, .mm = 0, ROTATE});
 
-                 //SETUP TIMER for Ferrari Speed update
-                 timer.setCallback(updateFerrariSpeed);
-                 timer.setInterval(100);
-                 timer.start();
-                 //
-               }});
-  //
+  //SPEED CALCULATIONS
+    // tested: when winded filament width = 2.1mm theory 1.75mm
+  float_t spoolWidth = (soft.ferrari_max - soft.ferrari_min);
+  float_t spoolMotorRotationsPerLayer = spoolWidth * hard.motors.spool.gear_ratio / 1.75;
+  float_t ferrariMotorRotationsPerLayer = spoolWidth / hard.motors.ferrari.mm_per_rotation;
+  spoolSpeedToFerrariSpeed = spoolMotorRotationsPerLayer / ferrariMotorRotationsPerLayer;
+
+  // SETUP TIMERS for ferrari and spool speed sync
+  timer.setCallback(updateFerrariSpeed);
+  timer.setInterval(100);
+  timer.start();
 }
 
 // Send machine status to web ui every Xs
 ///////////////////////////////////
 void reportStatus()
 {
+  if (connection == CONNECTING)
+    return;
   StaticJsonDocument<512> doc;
   String json;
 
@@ -146,6 +153,8 @@ void reportStatus()
   doc["s"]["a"] = sS.active;
   doc["m"] = mode2string();
   doc["e"] = nullptr;
+  doc["w"] = 0; //sS.rotations;
+  doc["l"] = 0; //fS.rotations * hard.motors.ferrari.mm_per_rotation / 1000;
   if (!fS.error.isEmpty())
     doc["e"] = fS.error;
   else if (!sS.error.isEmpty())
@@ -173,6 +182,7 @@ public:
     ///////////////////////////////////
     hard = conf.hard;
     soft = conf.soft;
+    mode = POWER;
     soft.load();
     DEBUG_PRINTLN(soft.asJSON());
     ///////////////////////////////////
@@ -211,8 +221,6 @@ public:
     report.start();
     ///////////////////////////////////
 
-    home();
-
     // Handle incoming socket events
     ///////////////////////////////////
     server.on("connect", [](JsonObject data)
@@ -224,7 +232,12 @@ public:
               { return wifi.scan(); });
     server.on("power", [](JsonObject data)
               {
-                power();
+                power(true);
+                return String();
+              });
+    server.on("standby", [](JsonObject data)
+              {
+                power(false);
                 return String();
               });
     server.on("calibrate", [](JsonObject data)
@@ -237,8 +250,7 @@ public:
     server.on("wind", [](JsonObject data)
               {
                 float mpm = data["mpm"].as<float>();
-                bool start = data["start"].as<bool>();
-                wind(mpm, start);
+                wind(mpm);
                 return String();
               });
     server.on("unwind", [](JsonObject data)
@@ -247,14 +259,36 @@ public:
                 unwind(mpm);
                 return String();
               });
+    server.on("pull", [](JsonObject data)
+              {
+                float mpm = data["mpm"].as<float>();
+                pull(mpm);
+                return String();
+              });
+    server.on("speed", [](JsonObject data)
+              {
+                float mpm = data["mpm"].as<float>();
+                float speed = mpm * 1000 / hard.motors.puller.mm_per_rotation / 60;
+                if (mode == WINDING || mode == PULLING)
+                  puller.setSpeed(speed);
+                else if (mode == UNWINDING)
+                  puller.setSpeed(-speed);
+                return String();
+              });
     server.on("modify", [](JsonObject data)
               {
                 soft.wifi.ap_enabled = data["ap_enabled"];
-                strcpy(soft.wifi.mdns_name, data["mdns_name"]);
-                strcpy(soft.wifi.ap_ssid, data["ap_ssid"]);
+                if (data["mdns_name"] != "")
+                {
+                  strcpy(soft.wifi.mdns_name, data["mdns_name"]);
+                }
+                if (data["ap_ssid"] != "")
+                {
+                  strcpy(soft.wifi.ap_ssid, data["ap_ssid"]);
+                }
 
                 soft.store();
-                return String();
+                return String("\"stored\"");
               });
     server.on("config", [](JsonObject data)
               { return soft.asJSON(); });

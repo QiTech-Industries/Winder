@@ -51,7 +51,8 @@ private:
             DEBUG_PRINTLN("Binary Messages are not supported.");
             return false;
         }
-        if (info->index == 0) request = {};
+        if (info->index == 0)
+            request = {};
 
         data[len] = 0;
         request.json += (char *)data;
@@ -113,6 +114,7 @@ public:
 
     void createSocket(String path)
     {
+        DEBUG_PRINTLN("[Server] Websocket created");
         webSocket = new AsyncWebSocket(path);
         webSocket->onEvent([this](AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
                            {

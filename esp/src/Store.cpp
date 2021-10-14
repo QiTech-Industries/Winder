@@ -12,8 +12,8 @@ String mode2string()
     case POWER:
         return "power";
         break;
-    case HOMING:
-        return "homing";
+    case PULLING:
+        return "pulling";
         break;
     case CALIBRATING:
         return "calibrating";
