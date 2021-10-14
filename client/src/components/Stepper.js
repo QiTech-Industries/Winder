@@ -1,18 +1,18 @@
 import { useState } from "preact/hooks"
 import Chart from "./Chart";
 
-const Stepper = ({ rpm = 0, name, active, data }) => {
+const Stepper = ({ name, chart, stats }) => {
     const [showDiagram, setShowDiagram] = useState(false);
-    rpm = rpm.toFixed(1);
-    active = active == 0 ? false : true;
+    const rpm = stats.r.toFixed(1);
+    const active = stats.a == 0 ? false : true;
 
     return (
-        <div class={`bg-white py-4 ${showDiagram ? "" : "px-6"} rounded-xl w-72 text-center mt-8 m-4 relative`}>
+        <div class={`bg-white py-4 ${showDiagram ? "" : "px-6"} rounded-xl w-full text-center mb-4 relative`}>
             {
                 showDiagram
                     ?
                     <div class="w-full h-full">
-                        <Chart data={data} />
+                        <Chart data={chart} />
                     </div>
                     :
                     <>

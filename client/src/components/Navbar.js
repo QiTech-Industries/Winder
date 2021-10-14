@@ -13,15 +13,15 @@ const Navbar = () => {
 
                 <a href="/">
                     <img
-                        class="h-14 pl-6"
-                        src="assets/icon.svg"
+                        class="w-16 ml-1"
+                        src="assets/icon.png"
                         alt="Industries Icon"
                     />
                 </a>
 
-                <h1 class="text-gray-700 font-bold">JARVIS Winder</h1>
+                <h1 class="text-gray-700 font-bold hidden md:block">JARVIS Winder</h1>
 
-                <ul class="flex">
+                <ul class="w-full flex justify-around max-w-sm">
                     {
                         links.map(link => {
                             return (

@@ -21,8 +21,8 @@ const Menu = (props) => {
                 <span className="m-auto font-bold"><i class="icon-power text-4xl"/></span>
             </li>
             <div class="ml-8 overflow-hidden">
-                <div style={{ transform: `translateX(-${slide}%)` }} className="bg-white pl-12 pr-8 h-16 py-2 border-2 rounded-r-full border-black transform duration-700">
-                    <ul className="flex space-x-2 whitespace-nowrap items-center">
+                <div style={{ transform: `translateX(-${slide}%)` }} className="bg-yellow-500 pl-10 pr-6 h-16 py-2 rounded-r-full transform duration-700">
+                    <ul className="flex space-x-2 whitespace-nowrap items-center py-1 h-full">
                         {props.children}
                     </ul>
                 </div>

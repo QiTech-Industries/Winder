@@ -14,7 +14,7 @@ import { useEffect, useRef, useState } from 'preact/hooks'
 const config = {
     type: 'line',
     data: {
-        labels: Array.from({length: 90}, (_, i) => i + "s"),
+        labels: Array.from({ length: 50 }, (_, i) => i + "s"),
         datasets: [
             {
                 data: [],
@@ -67,6 +67,9 @@ const config = {
                     drawOnChartArea: false, // only want the grid lines for one axis to show up
                 },
             },
+        },
+        animation: {
+            duration: 0
         }
     },
 };
@@ -79,7 +82,7 @@ const Chart = ({data}) => {
         if(!chartInstance) return;
         chartInstance.data.datasets[0].data = data;
         chartInstance.update();
-    }, [data, chartInstance]);
+    }, [data]);
 
     useEffect(() => {
         if (!chartContainer || !chartContainer.current) return;
@@ -88,7 +91,7 @@ const Chart = ({data}) => {
     }, [chartContainer]);
 
     return (
-        <canvas ref={chartContainer} height="240" class="h-52 w-full"></canvas>
+        <canvas ref={chartContainer} height="260" class="h-52 w-full"></canvas>
     )
 }
 

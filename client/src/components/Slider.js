@@ -31,7 +31,7 @@ const Range = (props) => {
     }, []);
 
     return (
-        <div class="relative w-full mx-3">
+        <div class="relative w-full">
             <div>
                 <input type="range"
                     min={minRange}
@@ -52,10 +52,8 @@ const Range = (props) => {
                 </div>
             </div>
 
-            <div class="flex justify-between items-center py-5">
-                <div class="w-32">
-                    <Number value={min.value} onChange={minTrigger} unit="m/min" />
-                </div>
+            <div class="w-full md:w-44 py-4">
+                <Number value={min.value} onChange={minTrigger} step={props.step} unit="m/min" />
             </div>
         </div>
     )

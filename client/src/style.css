@@ -2,36 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 @import '/assets/fonts/style.css';
+/*Help Tooltips*/
 
 .tooltip {
 	@apply invisible absolute;
-  }
-  
-  .has-tooltip:hover .tooltip {
-	@apply visible z-50;
-  }
-  
-input[type=range]::-webkit-slider-thumb {
-	-webkit-appearance: none;
-	cursor: pointer;
-	@apply pointer-events-auto w-6 h-6 bg-red-500;
 }
 
-.left-thumb::-webkit-slider-thumb{
-	@apply -ml-3;
+.has-tooltip:hover .tooltip {
+	@apply visible z-50;
+}
+
+/*Range input for different vendors*/
+
+input[type=range]::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	@apply pointer-events-auto w-6 h-6;
+}
+
+input[type=range]::-moz-range-thumb {
+	appearance: none;
+	@apply pointer-events-auto w-6 h-6;
+}
+
+.left-thumb::-webkit-slider-thumb {
+	transform: translate(-50%);
+}
+
+.left-thumb::-moz-range-thumb {
+	transform: translate(-50%);
 }
 
 .right-thumb::-webkit-slider-thumb{
-	@apply ml-3;
+	transform: translate(50%);
 }
 
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button
-{
+.right-thumb::-moz-range-thumb {
+	transform: translate(50%);
+}
+
+/*Hide up/down arrows on number input*/
+
+input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
 	-webkit-appearance: none;
 	margin: 0;
 }
 
-input[type=number]{
+input[type=number] {
 	-moz-appearance: textfield;
 }

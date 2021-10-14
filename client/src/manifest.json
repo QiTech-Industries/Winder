@@ -1,15 +1,15 @@
 {
-  "name": "winder",
+  "name": "JARVIS Winder",
   "short_name": "winder",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#fff",
-  "theme_color": "#673ab8",
+  "theme_color": "#111827",
   "icons": [
     {
-      "src": "/assets/logo.svg",
-      "type": "image/svg",
+      "src": "/assets/icon.png",
+      "type": "image/png",
       "sizes": "512x512"
     }
   ]

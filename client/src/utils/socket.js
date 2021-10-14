@@ -12,6 +12,7 @@ class Socket {
     }
 
     open() {
+        if (typeof window === "undefined") return;
         this.ws = new WebSocket(this.url);
         this.ws.onopen = e => {
             this.connects = 0;
@@ -27,7 +28,7 @@ class Socket {
             }
         }
         this.ws.onerror = e => {
-            (e && e.code === 'ECONNREFUSED') ?  this.#reconnect() : this.#run("error");
+            (e && e.code === 'ECONNREFUSED') ? this.#reconnect() : this.#run("error");
         }
         this.ws.onmessage = e => {
             const data = JSON.parse(e.data);
@@ -52,12 +53,21 @@ class Socket {
 
     emit(event, data = {}, cb) {
         this.on(event, cb);
+        if (this.ws && this.ws.readyState === 1) {
+            this.ws.send(JSON.stringify({ event, data }));
+        }
+    }
+
+    buffer(event, data = {}, cb) {
+        this.on(event, cb);
+        const json = JSON.stringify({ event, data });
         if (!this.ws || this.ws.readyState !== 1) {
-            this.queue.push(JSON.stringify({ event, data }));
+            !this.queue.includes(json) ? this.queue.push(json) : null;
+            console.log(this.queue);
             return;
         }
 
-        this.ws.send(JSON.stringify({ event, data }));
+        this.ws.send(json);
     }
 
     #run(event, data) {
@@ -68,7 +78,7 @@ class Socket {
     #reconnect(e) {
         if (this.connects++ < this.reconnectMax) {
             this.timer = setTimeout(() => {
-                    this.#run("reconnect");
+                this.#run("reconnect");
                 this.open();
             }, this.reconnectInterval);
         } else {
@@ -77,7 +87,7 @@ class Socket {
     }
 }
 
-const socket = new Socket('ws://winder.local/ws');
+//const socket = new Socket('ws://winder.local/ws');
+const socket = new Socket('ws://localhost:5000/ws');
 socket.open();
-export {socket};
-//export const socket = new Socket('ws://localhost:5000');
+export { socket };

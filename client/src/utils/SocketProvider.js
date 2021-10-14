@@ -17,7 +17,7 @@ export const SocketProvider = ({ children }) => {
             toast.error("An error occured while communicating with the Winder.");
         });
 
-        // if the connection opens too fast this callback might not be registers yet
+        // if the connection opens too fast this callback might not be registered yet
         socket.on('open', () => {
             toast.success("Successfully connected to the Winder.");
         });
