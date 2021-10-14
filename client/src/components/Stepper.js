@@ -4,7 +4,7 @@ import Chart from "./Chart";
 const Stepper = ({ name, chart, stats }) => {
     const [showDiagram, setShowDiagram] = useState(false);
     let rpm = stats.r;
-    if (stats.r > 100)
+    if (Math.abs(stats.r) > 100)
         rpm = stats.r.toFixed(0);
     else
         rpm = stats.r.toFixed(1);
