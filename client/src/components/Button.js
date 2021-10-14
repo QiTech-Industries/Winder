@@ -1,6 +1,5 @@
 const Button = ({ secondary, onClick, children, disabled, custom }) => {
     const handleClick = e => {
-        console.log("click");
         e.stopPropagation();
         e.preventDefault();
         if (onClick) onClick(e);
