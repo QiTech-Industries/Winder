@@ -42,7 +42,6 @@ export const StatsProvider = ({ children }) => {
     useEffect(() => {
         if (!socket) return;
         socket.on("stats", data => {
-            console.log(stats.current);
             data.t = stats.current.t;
             stats.current = data;
         });
