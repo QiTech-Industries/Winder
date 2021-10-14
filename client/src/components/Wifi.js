@@ -64,7 +64,7 @@ const Wifi = () => {
             return network.id === id
         }).name;
 
-        socket.emit("connect", { name, password }, data => {
+        socket.buffer("connect", { name, password }, data => {
             setConnecting(null);
             if (data === "connected") {
                 setLoading(false);
