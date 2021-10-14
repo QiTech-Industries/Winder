@@ -142,6 +142,8 @@ void reportStatus()
   auto sS = spool.getStatus();
   auto pS = puller.getStatus();
 
+  Serial.println(fS.error);
+
   doc["f"]["r"] = fS.rpm;
   doc["f"]["s"] = fS.stall;
   doc["f"]["a"] = fS.active;

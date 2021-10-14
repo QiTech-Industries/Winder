@@ -34,8 +34,6 @@ private:
     bool adjustSpeedToStall = false;
     bool stopped = true;
     int ignore = 25;
-    uint32_t totalTicks = 0;
-    uint32_t lastTicks = 0;
     bool isHomed = false;
 
     uint32_t microsteps_per_rotation;
@@ -142,9 +140,9 @@ private:
             //uint16_t speeds[]{1365, 632, 411, 305, 242, 201, 171, 149, 133, 119, 108, 99, 91, 85, 79, 74, 69, 66, 62, 59, 0};
             //float curve[]{934.33, 730.73, 585.53, 526.87, 505.13, 513.60, 565.13, 510.80, 438.00, 424.00, 372.33, 281, 235.6, 195, 157, 108.67, 66.2, 45.4, 16.6, 1, 0};
 
-            float curve[]{784.6,705.5,608.9,574.3,611.6,559.7,556.7,641.3,528.5,532,605.1,622.6,597.1,553.4,585.9,568.4,560,537.9,557,517.9,510.9,546.5,564.3,515.3,496,497.4,498,479.4,507.4,436.5,434.7,423.3,348.4,360.7,330.9,273.8,268.2,273.7,255.9,226.8};
-            uint16_t speeds[]{3619,1809,1206,904,723,603,517,452,402,361,329,301,278,258,241,226,212,201,190,180,172,164,157,150,144,139,134,129,124,120,116,113,109,106,103,100,97,95,92,90,0};
-            
+            float curve[]{784.6, 705.5, 608.9, 574.3, 611.6, 559.7, 556.7, 641.3, 528.5, 532, 605.1, 622.6, 597.1, 553.4, 585.9, 568.4, 560, 537.9, 557, 517.9, 510.9, 546.5, 564.3, 515.3, 496, 497.4, 498, 479.4, 507.4, 436.5, 434.7, 423.3, 348.4, 360.7, 330.9, 273.8, 268.2, 273.7, 255.9, 226.8};
+            uint16_t speeds[]{3619, 1809, 1206, 904, 723, 603, 517, 452, 402, 361, 329, 301, 278, 258, 241, 226, 212, 201, 190, 180, 172, 164, 157, 150, 144, 139, 134, 129, 124, 120, 116, 113, 109, 106, 103, 100, 97, 95, 92, 90, 0};
+
             Serial.print(drv_status.sg_result);
             Serial.print(" : ");
             Serial.println(speed);
@@ -284,8 +282,8 @@ public:
         stop();
         driver->toff(0);
         queue.clear();
-        totalTicks = 0;
         isHomed = false;
+        ignore = 25;
     }
 
     void on()
@@ -307,8 +305,10 @@ public:
     {
         // do not allow setting fixed end position if currently homing
         // update next command instead if it is of type POSITION
-        if(stopOnStall){
-            if(queue[queueCurrent].command == POSITION){
+        if (stopOnStall)
+        {
+            if (queue[queueCurrent].command == POSITION)
+            {
                 queue[queueCurrent].mm = position;
             }
             return;
@@ -365,7 +365,7 @@ public:
 
         stats.stall = drv_status.sg_result;
         stats.active = driver->toff() == 0 ? 0 : 1;
-        stats.rotations = totalTicks / microsteps_per_rotation;
+        stats.rotations = 0;
 
         return stats;
     }
