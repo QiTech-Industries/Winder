@@ -285,6 +285,7 @@ public:
         driver->toff(0);
         queue.clear();
         totalTicks = 0;
+        isHomed = false;
     }
 
     void on()
@@ -312,7 +313,7 @@ public:
             }
             return;
         }
-        
+
         int32_t pos = position * microsteps_per_rotation / config.mm_per_rotation;
         stepper->setSpeedInHz((int)microsteps_per_rotation * abs(rps));
         stepper->moveTo(pos);
