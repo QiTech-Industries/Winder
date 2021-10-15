@@ -69,9 +69,10 @@ void pull(float mpm)
   {
     ferrari.add({.rps = -2, .mm = 0, HOME});
   }
-  ferrari.add({.rps = 2, .mm = soft.ferrari_max, POSITION, []{
-    ferrariReady = true;
-  }});
+  ferrari.add({.rps = 2, .mm = soft.ferrari_max, POSITION, []
+               {
+                 ferrariReady = true;
+               }});
 }
 
 void calibrate(uint16_t position, bool startPos = true)
@@ -105,7 +106,8 @@ void updateFerrariSpeed()
 
 void wind(float mpm)
 {
-  if(!ferrariReady) return;
+  if (!ferrariReady)
+    return;
   mode = WINDING;
   float speed = mpm * 1000 / hard.motors.puller.mm_per_rotation / 60;
 
@@ -117,7 +119,7 @@ void wind(float mpm)
   puller.add({.rps = speed, .mm = 0, ROTATE});
 
   //SPEED CALCULATIONS
-    // tested: when winded filament width = 2.1mm theory 1.75mm
+  // tested: when winded filament width = 2.1mm theory 1.75mm
   float_t spoolWidth = (soft.ferrari_max - soft.ferrari_min);
   float_t spoolMotorRotationsPerLayer = spoolWidth * hard.motors.spool.gear_ratio / 1.75;
   float_t ferrariMotorRotationsPerLayer = spoolWidth / hard.motors.ferrari.mm_per_rotation;
@@ -180,12 +182,25 @@ public:
   {
     printBanner();
 
-    // Load config from correct locations
+    // Load config from main.cpp
     ///////////////////////////////////
     hard = conf.hard;
     soft = conf.soft;
-    mode = POWER;
-    soft.load();
+    ///////////////////////////////////
+
+    // Initialize Stepper Motors
+    ///////////////////////////////////
+    ferrari.init(hard.motors.ferrari);
+    spool.init(hard.motors.spool);
+    puller.init(hard.motors.puller);
+    ///////////////////////////////////
+
+    // Load config from SPIFFS and BLYNK
+    ///////////////////////////////////
+    if (soft.load())
+      power(true);
+    else
+      power(false);
     DEBUG_PRINTLN(soft.asJSON());
     ///////////////////////////////////
 
@@ -206,13 +221,6 @@ public:
       wifi.createAP(soft.wifi.ap_ssid, soft.wifi.ap_password);
       server.createCaptive(WiFi.softAPIP());
     }
-    ///////////////////////////////////
-
-    // Initialize Stepper Motors
-    ///////////////////////////////////
-    ferrari.init(hard.motors.ferrari);
-    spool.init(hard.motors.spool);
-    puller.init(hard.motors.puller);
     ///////////////////////////////////
 
     // Setup Timers
