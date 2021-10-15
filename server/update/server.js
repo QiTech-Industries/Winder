@@ -1,5 +1,5 @@
 const express = require('express')
-const { log, registerWinderGearRatio5, checkForDeviceUpdate, deviceExists, updateVersion } = require('./requests')
+const { log, registerWinder, checkForDeviceUpdate, deviceExists, completeUpdate } = require('./requests')
 const { validateMac } = require('./utils')
 
 const app = express();
@@ -21,11 +21,10 @@ app.get('/:mac', async (req, res) => {
   // Winders with a 1:5 Gear ratio
   deviceExists(mac).then(exists => {
     if (!exists) {
-      registerWinderGearRatio5(mac).then(() => {
+      registerWinder(mac).then(() => {
         log(ip, "register", mac);
       });
     }
-    else log(ip, "check", mac);
   })
   //
 
@@ -38,6 +37,7 @@ app.get('/:mac', async (req, res) => {
       res.download(firmware.path);
       return;
     }
+    else log(ip, "check", mac);
     res.status(201).send();
     return;
   });
@@ -53,17 +53,9 @@ app.get('/success/:mac', async (req, res) => {
     return;
   }
 
+  completeUpdate(mac);
   log(ip, "success", mac);
-
-  checkForDeviceUpdate(mac).then(firmware => {
-    if (firmware) {
-      updateVersion(firmware.type, firmware.id, mac);
-      res.status(204).send();
-      return;
-    }
-    res.status(400).send();
-    return;
-  });
+  res.status(201).send();
 });
 
 app.listen(5000, () => {

@@ -1,68 +1,80 @@
 const { db } = require('./database')
 const dateFormat = require("dateformat");
 
+let sql = "";
 
 const log = async (ip, action, mac = null) => {
-    const sql = "INSERT INTO logs SET ?";
+    sql = "INSERT INTO logs SET ?";
     const data = { ip, action, mac };
-
     await db.query(sql, data);
+
+    if (mac) updateStatus(mac, "online");
 }
 
 const deviceExists = async (mac) => {
-    const sql = "SELECT COUNT(*) AS count from devices WHERE mac=?";
-    const result = await db.query(sql, mac);
-
-    if (result[0][0].count > 0) return true;
-    return false;
-}
-
-const getLatestFirmware = async (hardware_id, beta = false) => {
-    const sql = "SELECT f1.* FROM firmware f1 LEFT JOIN firmware f2 ON (f1.type = f2.type AND f1.created_at < f2.created_at) WHERE f2.created_at IS NULL AND f1.hardware_id=? AND f1.beta=? ORDER BY type DESC";
-    const result = await db.query(sql, [hardware_id, beta]);
-
-    if (result[0].length != 2) return false;
-
-    return {
-        firmware: { ...result[0][0] },
-        spiffs: { ...result[0][1] }
-    }
-}
-
-const checkForDeviceUpdate = async (mac) => {
-    const sql = `SELECT firmware_spiffs, firmware_firmware, beta, hardware_id FROM devices WHERE mac=? AND curtime() >= update_start AND curtime() <= update_end`;
+    sql = "SELECT mac from devices WHERE mac=?";
     const result = await db.query(sql, mac);
 
     if (!result[0].length) return false;
+    return true;
+}
 
-    const firmware = await getLatestFirmware(result[0][0].hardware_id, result[0][0].beta);
+const getLatestFirmwareId = async (type) => {
+    sql = "SELECT id FROM firmware WHERE type = ? ORDER BY created_at DESC LIMIT 1";
+    const result = await db.query(sql, type);
 
-    if (!firmware) return false;
+    if (!result[0].length) return null;
 
-    if (firmware.firmware.id != result[0][0].firmware_firmware) {
-        return { ...firmware.firmware, build: dateFormat(firmware.firmware.created_at, "ddmmHHMM") };
+    return result[0][0].id;
+}
+
+const updateStatus = async (mac, status) => {
+    sql = "UPDATE devices SET status=?, updated_at=curtime() WHERE mac=?";
+    await db.query(sql, [status, mac]);
+}
+
+const checkForDeviceUpdate = async (mac) => {
+    const types = ["spiffs", "firmware"];
+    for (i = 0; i < 2; i++) {
+        sql = `
+        SELECT firmware.created_at AS build, firmware.type, firmware.path, firmware.version
+            FROM devices
+        JOIN firmware
+            ON target_${types[i]} = firmware.id
+        WHERE 
+            (target_${types[i]} != current_${types[i]} OR current_${types[i]} IS NULL)
+            AND target_${types[i]} IS NOT NULL
+            AND status != 'updating_${i==0 ? types[1] : types[0]}'
+            AND mac=?
+            AND curtime() >= update_start
+            AND curtime() <= update_end
+        `;
+        const result = await db.query(sql, mac);
+
+        if (result[0].length) {
+            updateStatus(mac, `updating_${types[i]}`);
+            return { ...result[0][0], build: dateFormat(result[0][0].build, "ddmmHHMM") };
+        }
     }
-    if (firmware.spiffs.id != result[0][0].firmware_spiffs) {
-        return { ...firmware.spiffs, build: dateFormat(firmware.spiffs.created_at, "ddmmHHMM") };
-    }
-
     return false;
 }
 
-const registerWinderGearRatio5 = async (mac) => {
-    const hardware_id = 1;
-    const firmware = await getLatestFirmware(hardware_id);
+const registerWinder = async (mac) => {
+    const spiffs = await getLatestFirmwareId("spiffs");
+    const firmware = await getLatestFirmwareId("firmware");
 
-    if(firmware) data = { mac, hardware_id, firmware_firmware: firmware.firmware.id };
-    else data = { mac, hardware_id};
+    data = { mac, target_firmware: firmware, target_spiffs: spiffs };
 
-    const sql = "INSERT IGNORE INTO devices SET ?";
+    sql = "INSERT IGNORE INTO devices SET ?";
     await db.query(sql, data);
 }
 
-const updateVersion = async (type, versionId, mac) => {
-    const sql = `UPDATE devices SET firmware_${type} = ? WHERE mac = ?`;
-    await db.query(sql, [versionId, mac]);
+const completeUpdate = async (mac) => {
+    console.log("complte");
+    sql = `UPDATE devices SET current_spiffs = target_spiffs WHERE mac = ? AND status = 'updating_spiffs'`;
+    await db.query(sql, mac);
+    sql = `UPDATE devices SET current_firmware = target_firmware WHERE mac = ? AND status = 'updating_firmware'`;
+    await db.query(sql, mac);
 }
 
-module.exports = { log, deviceExists, registerWinderGearRatio5, checkForDeviceUpdate, updateVersion };
+module.exports = { log, deviceExists, registerWinder, checkForDeviceUpdate, completeUpdate };

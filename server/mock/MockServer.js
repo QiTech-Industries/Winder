@@ -1,6 +1,6 @@
 const WebSocket = require('ws')
 
-const wss = new WebSocket.Server({ port: 5000 });
+const wss = new WebSocket.Server({ port: 5001 });
 let status;
 
 const wind = () => {
@@ -66,7 +66,7 @@ const unwind = () => {
         f: {//ferrari
             r: 0,
             s: 0,
-            a: false,
+            a: true,
         },
         m: "unwinding",//mode
         w: 0, // total windings
@@ -93,6 +93,30 @@ const standby = () => {
             a: false,
         },
         m: "standby",//mode
+        w: 0, // total windings
+        l: 0, // total length
+        e: null//error
+    };
+}
+
+const pull = () => {
+    status = {
+        s: {//spool
+            r: 0,//rpm
+            s: 0,//stall
+            a: true,//active
+        },
+        p: {//puller
+            r: Math.floor(Math.random() * 50),
+            s: 0,
+            a: true,
+        },
+        f: {//ferrari
+            r: 0,
+            s: 0,
+            a: true,
+        },
+        m: "pulling",//mode
         w: 0, // total windings
         l: 0, // total length
         e: null//error
@@ -186,8 +210,15 @@ wss.on('connection', function connection(ws) {
                 break;
 
             case "power":
-                if (status.m != "power") status.m = "power";
-                else status.m = "standby";
+                status.m = "power";
+                break;
+
+            case "standby":
+                status.m = "standby";
+                break;
+
+            case "pull":
+                status.m = "pulling";
                 break;
 
             case "config":
@@ -212,6 +243,10 @@ wss.on('connection', function connection(ws) {
 
             case "power":
                 power();
+                break;
+
+            case "pulling":
+                pull();
                 break;
 
             default:

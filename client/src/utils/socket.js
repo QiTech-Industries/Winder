@@ -87,7 +87,8 @@ class Socket {
     }
 }
 
-//const socket = new Socket('ws://winder.local/ws');
-const socket = new Socket('ws://localhost:5000/ws');
+const socket = new Socket('ws://winder.local/ws');
+//const socket = new Socket(`ws://${window.location.hostname}/ws`);
+//const socket = new Socket(`ws://localhost:5001/ws`);
 socket.open();
 export { socket };

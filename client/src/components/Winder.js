@@ -14,20 +14,46 @@ const Winder = () => {
     const { stats, charts } = useStats();
 
     const menu = [
-        { inactive: "Wind", active: "Winding", action: "wind", mode: "winding" },
-        { inactive: "Unwind", active: "Unwinding", action: "unwind", mode: "unwinding" },
-    ]
-
-    const mode2Action = (mode) => {
-        return menu.find(item => item.mode === mode).action;
-    }
-
-    // update current speed in meter/minute
-    const changeSpeed = (mpm) => {
-        setSpeed(mpm);
-        if (stats.m === "winding" || stats.m === "unwinding") {
-            socket.emit(mode2Action(stats.m), { mpm }, () => {});
+        {
+            name: "Start Puller",
+            action: () => socket.emit("pull", { mpm: speed }),
+            active: stats.m != "pulling" && stats.m != "winding"
+        },
+        {
+            name: "Start Winding",
+            action: () => socket.emit("wind", { mpm: speed }),
+            active: stats.m == "pulling"
+        },
+        {
+            name: "Winding",
+            action: () => socket.emit("power"),
+            active: stats.m == "winding"
+        },
+        {
+            name: "Unwind",
+            action: () => socket.emit("unwind", { mpm: speed }),
+            active: stats.m != "unwinding"
+        },
+        {
+            name: "Unwinding",
+            action: () => socket.emit("power"),
+            active: stats.m == "unwinding"
+        },
+        {
+            name: "Off",
+            action: () => socket.emit("standby"),
+            active: stats.m != "standby"
+        },
+        {
+            name: "Power",
+            action: () => socket.emit("power"),
+            active: stats.m == "standby"
         }
+    ];
+
+    const changeSpeed = (mpm) => {
+        socket.emit("speed", { mpm });
+        setSpeed(mpm);
     }
 
     return (
@@ -36,19 +62,13 @@ const Winder = () => {
                 <Menu enabled={stats.m != "standby"}>
                     {
                         menu.map(item => {
-                            // stop if clicked mode is active, start if inactive
-                            return <Button secondary={item.mode === stats.m} onClick={e => socket.emit(item.action, { mpm: item.mode === stats.m ? 0 : speed })}>
-                                {
-                                    item.mode === stats.m
-                                        ? item.active
-                                        : item.inactive
-                                }
-                            </Button>
+                            if (item.active) {
+                                return <Button onClick={e => item.action()}>
+                                    {item.name}
+                                </Button>
+                            }
                         })
                     }
-                    <Button onClick={e => socket.emit("power")}>
-                        {stats.m != "standby" ? "Power Off" : "Power On"}
-                    </Button>
                 </Menu>
             </div>
             <div class="max-w-6xl mx-auto">
@@ -63,7 +83,7 @@ const Winder = () => {
                 </div>
                 <Spool />
             </div>
-        </div>
+        </div >
     )
 }
 
