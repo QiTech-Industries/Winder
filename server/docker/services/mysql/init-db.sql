@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: qi-db
--- Erstellungszeit: 14. Okt 2021 um 21:14
+-- Erstellungszeit: 15. Okt 2021 um 01:08
 -- Server-Version: 5.7.34
 -- PHP-Version: 7.4.20
 
@@ -39,7 +39,8 @@ CREATE TABLE `devices` (
   `target_spiffs` int(11) DEFAULT NULL,
   `target_firmware` int(11) DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `status` enum('online','offline','updating_spiffs','updating_firmware') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'online'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -89,7 +90,8 @@ ALTER TABLE `devices`
 --
 ALTER TABLE `firmware`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `type` (`type`,`version`);
+  ADD UNIQUE KEY `type` (`type`,`version`),
+  ADD UNIQUE KEY `path` (`path`);
 
 --
 -- Indizes für die Tabelle `logs`
