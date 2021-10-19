@@ -34,8 +34,6 @@ private:
     bool adjustSpeedToStall = false;
     bool stopped = true;
     int ignore = 25;
-    uint32_t totalTicks = 0;
-    uint32_t lastTicks = 0;
     bool isHomed = false;
 
     uint32_t microsteps_per_rotation;
@@ -128,6 +126,25 @@ private:
         return false;
     }
 
+    void calibrateStall(uint16_t minSpeedUs)
+    {
+        setSpeedUs(minSpeedUs);
+        for (uint8_t i = 0; i < 64; i++)
+        {
+            driver->sgt(7);
+            delay(300); //Reliable results only after 300ms delay
+            DRV_STATUS_t drv_status{0};
+            drv_status.sr = driver->DRV_STATUS();
+            Serial.println(drv_status.sg_result);
+            if (drv_status.sg_result == 1023)
+            {
+                Serial.println("CALIBRATED STALL VALUE:");
+                Serial.println(i);
+                //break;
+            }
+        }
+    }
+
     void moveAdjust()
     {
         if (adjustSpeedToStall)
@@ -139,12 +156,9 @@ private:
             Serial.println(drv_status.sg_result);
 
             // last speed value is dummy to prevent i+1 errors
-            //uint16_t speeds[]{1365, 632, 411, 305, 242, 201, 171, 149, 133, 119, 108, 99, 91, 85, 79, 74, 69, 66, 62, 59, 0};
-            //float curve[]{934.33, 730.73, 585.53, 526.87, 505.13, 513.60, 565.13, 510.80, 438.00, 424.00, 372.33, 281, 235.6, 195, 157, 108.67, 66.2, 45.4, 16.6, 1, 0};
+            float curve[]{660, 600, 580, 500.4, 465.6, 467.5, 401, 463.1, 371.3, 444.4, 374.2, 380.5, 364.7, 332.1, 387.9, 324.8, 323, 350, 356.4, 356.9, 309.5, 331, 324, 343.3, 316.4, 346.7, 311, 322, 300.2, 284.1, 326.3, 315.5, 320.5, 295.1, 282.7, 288, 315.1, 268.3, 265.5, 274.7};
+            uint16_t speeds[]{3619, 1809, 1206, 904, 723, 603, 517, 452, 402, 361, 329, 301, 278, 258, 241, 226, 212, 201, 190, 180, 172, 164, 157, 150, 144, 139, 134, 129, 124, 120, 116, 113, 109, 106, 103, 100, 97, 95, 92, 90, 0};
 
-            float curve[]{784.6,705.5,608.9,574.3,611.6,559.7,556.7,641.3,528.5,532,605.1,622.6,597.1,553.4,585.9,568.4,560,537.9,557,517.9,510.9,546.5,564.3,515.3,496,497.4,498,479.4,507.4,436.5,434.7,423.3,348.4,360.7,330.9,273.8,268.2,273.7,255.9,226.8};
-            uint16_t speeds[]{3619,1809,1206,904,723,603,517,452,402,361,329,301,278,258,241,226,212,201,190,180,172,164,157,150,144,139,134,129,124,120,116,113,109,106,103,100,97,95,92,90,0};
-            
             Serial.print(drv_status.sg_result);
             Serial.print(" : ");
             Serial.println(speed);
@@ -158,13 +172,13 @@ private:
                         // Load too high, slow down
                         Serial.print("slower : ");
                         Serial.println(curve[i]);
-                        setSpeedUs(min(speed + 20, speeds[0]));
+                        setSpeedUs(min(speed * 1.1, speeds[0]));
                     }
                     else
                     {
                         // Load too low, speed up
                         Serial.println("faster");
-                        setSpeedUs(max(speed - 20, speeds[39]));
+                        setSpeedUs(max(speed * 0.8, speeds[39]));
                     }
                     break;
                 }
@@ -284,7 +298,8 @@ public:
         stop();
         driver->toff(0);
         queue.clear();
-        totalTicks = 0;
+        isHomed = false;
+        ignore = 25;
     }
 
     void on()
@@ -306,13 +321,15 @@ public:
     {
         // do not allow setting fixed end position if currently homing
         // update next command instead if it is of type POSITION
-        if(stopOnStall){
-            if(queue[queueCurrent].command == POSITION){
+        if (stopOnStall)
+        {
+            if (queue[queueCurrent].command == POSITION)
+            {
                 queue[queueCurrent].mm = position;
             }
             return;
         }
-        
+
         int32_t pos = position * microsteps_per_rotation / config.mm_per_rotation;
         stepper->setSpeedInHz((int)microsteps_per_rotation * abs(rps));
         stepper->moveTo(pos);
@@ -329,6 +346,11 @@ public:
     uint32_t getSpeedUs()
     {
         return abs(stepper->getCurrentSpeedInUs());
+    }
+
+    float_t getSpeedRpm()
+    {
+        return (60000000 / abs(stepper->getCurrentSpeedInUs()) / microsteps_per_rotation);
     }
 
     status_s getStatus()
@@ -364,7 +386,7 @@ public:
 
         stats.stall = drv_status.sg_result;
         stats.active = driver->toff() == 0 ? 0 : 1;
-        stats.rotations = totalTicks / microsteps_per_rotation;
+        stats.rotations = 0;
 
         return stats;
     }

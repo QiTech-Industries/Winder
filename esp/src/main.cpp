@@ -36,7 +36,7 @@ void setup()
                 .spool = {
 
                     .max_current = 700, .microsteps = 16, .gear_ratio = 5.18, .steps_per_rotation = 200,
-                    .mm_per_rotation = 550, .default_acceleration = 10000, .stall = 40, // 310 if spool is not filles up
+                    .mm_per_rotation = 550, .default_acceleration = 10000, .stall = 7, // 310 if spool is not filled up
                     .pins = {
                         .en = 12,
                         .dir = 16,
@@ -52,8 +52,8 @@ void setup()
             }},
         .soft = {
             .wifi = {
-                "QiTech Konferenz",
-                "Malte100%",
+                "",
+                "",
                 "Jarvis Winder",
                 "",
                 "Jarvis Winder",
