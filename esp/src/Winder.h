@@ -115,7 +115,7 @@ void wind(float mpm)
   ferrari.add({.rps = 1, .mm = soft.ferrari_min, POSITION});
   ferrari.add({.rps = 1, .mm = soft.ferrari_max, POSITION});
   ferrari.loop(2);
-  spool.add({.rps = -3, .mm = 0, ADJUST});
+  spool.add({.rps = 3, .mm = 0, ADJUST});
   puller.add({.rps = speed, .mm = 0, ROTATE});
 
   //SPEED CALCULATIONS
