@@ -1,0 +1,10 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  call-workflow-1:
+    uses: QiTech-Industries/Winder/.github/workflows/pio.yml@latest
+  call-workflow-2:
+    uses: QiTech-Industries/Winder/.github/workflows/wspiffs.yml@latest
