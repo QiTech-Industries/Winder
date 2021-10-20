@@ -1,12 +1,13 @@
-# This is a basic workflow to help you get started with Actions
-
 name: Platform IO Build
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push but only for the master branch
+  # Triggers the workflow on push but only for the esp folder of master branch
   push:
-    branches: [ master ]
+    branches:
+      - master
+    paths:
+      - esp/src/**
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -14,9 +15,8 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   build:
-
+    name: Firmware build
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: Cache pip
@@ -43,6 +43,6 @@ jobs:
     - name: 'Upload Artifact'
       uses: actions/upload-artifact@v2
       with:
-        name: firmware.bin
+        name: frimware.zip
         path: ./esp/.pio/build/esp32dev/firmware.bin
-        retention-days: 5
+        retention-days: 30
