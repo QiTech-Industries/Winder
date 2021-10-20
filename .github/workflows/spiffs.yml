@@ -35,5 +35,5 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: spiffs.zip
-        path: ./spiffs.bin
+        path: ./client/spiffs.bin
         retention-days: 30
