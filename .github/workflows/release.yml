@@ -1,10 +1,32 @@
 name: Create Release
 
 on:
-  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
 
 jobs:
-  call-workflow-1:
-    uses: QiTech-Industries/Winder/.github/workflows/pio.yml@master
-  call-workflow-2:
-    uses: QiTech-Industries/Winder/.github/workflows/spiffs.yml@master
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build Changelog
+        id: github_release
+        uses: mikepenz/release-changelog-builder-action@2.4.3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          body: ${{steps.github_release.outputs.changelog}}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+#jobs:
+#  call-workflow-1:
+#    uses: QiTech-Industries/Winder/.github/workflows/pio.yml@master
+#  call-workflow-2:
+#    uses: QiTech-Industries/Winder/.github/workflows/spiffs.yml@master
