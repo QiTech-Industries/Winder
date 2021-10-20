@@ -18,7 +18,7 @@ defaults:
 
 jobs:
   build:
-    name:  Build Spiffs
+    name: Build Spiffs
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -28,4 +28,12 @@ jobs:
         cache: 'npm'
         cache-dependency-path: client/package-lock.json
     - run: npm install
-    - run: npm run build --if-present
+    - run: npm run build
+    - run: wget -c https://github.com/earlephilhower/mklittlefs/releases/download/3.0.0/x86_64-linux-gnu-mklittlefs-295fe9b.tar.gz -O - | tar -xz
+    - run: ./mklittlefs -c ./build -p 256 -b 4096 -s 1507328 spiffs.bin
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: spiffs.zip
+        path: spiffs.bin
+        retention-days: 30
