@@ -15,7 +15,8 @@ jobs:
         id: github_release
         uses: mikepenz/release-changelog-builder-action@v2.4.3
         with:
-          configuration: release-conf.json
+          configuration: "release-conf.json"
+          commitMode: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
