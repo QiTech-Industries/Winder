@@ -5,6 +5,6 @@ on:
 
 jobs:
   call-workflow-1:
-    uses: QiTech-Industries/Winder/.github/workflows/pio.yml@latest
+    uses: QiTech-Industries/Winder/.github/workflows/pio.yml@master
   call-workflow-2:
-    uses: QiTech-Industries/Winder/.github/workflows/wspiffs.yml@latest
+    uses: QiTech-Industries/Winder/.github/workflows/wspiffs.yml@master
