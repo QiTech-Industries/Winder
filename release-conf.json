@@ -21,7 +21,7 @@
     ],
     "empty_template": "❌ **Whoops** there seem to be no changes in this release.",
     "template": "${{CHANGELOG}}\n\n<details>\n<summary>Uncategorized</summary>\n\n${{UNCATEGORIZED}}\n</details>",
-    "pr_template": "${{AUTHOR}} ${{SHA}} ${{DATE}}",
+    "pr_template": "${{AUTHOR}}",
     "sort": "DESC",
     "label_extractor": [
         {
