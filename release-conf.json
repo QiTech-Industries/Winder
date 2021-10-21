@@ -1,3 +1,16 @@
 {
-    "empty_template": "❌ **Whoops** there seem to be no changes in this release."
+    "empty_template": "❌ **Whoops** there seem to be no changes in this release.",
+    "template": "${{CHANGELOG}}\n\n<details>\n<summary>Uncategorized</summary>\n\n${{UNCATEGORIZED}}\n</details>",
+    "label_extractor": [
+        {
+            "pattern": "(.) (.+)",
+            "target": "$1",
+            "flags": "gu"
+        },
+        {
+            "pattern": "\\[Issue\\]",
+            "on_property": "title",
+            "method": "match"
+        }
+    ]
 }
