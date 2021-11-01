@@ -1,21 +1,21 @@
 {
     "categories": [
       {
-        "title": "## 🚀 Features",
-        "labels": ["feature"]
+        "title": "<h2 class='text-2xl'>🚀 Features</h2><ul class='text-lg list-disc list-inside mb-3 pl-4'>",
+        "labels": ["feature", "new", "added", "created", "create"]
       },
       {
-        "title": "## 🐛 Fixes",
-        "labels": ["fix"]
+        "title": "</ul><h2 class='text-2xl'>🐛 Fixes</h2><ul class='text-lg list-disc list-inside mb-3 pl-4'>",
+        "labels": ["fix", "improved", "fixed"]
       },
       {
-        "title": "## 🧪 Tests",
-        "labels": ["test"]
+        "title": "</ul><details class='cursor-pointer text-2xl'><summary>🔨Uncategorized</summary><ul class='text-lg list-disc list-inside pl-4'>",
+        "labels": ["fix", "improved", "fixed"]
       }
     ],
-    "empty_template": "❌ **Whoops** there seem to be no changes in this release.",
-    "template": "${{CHANGELOG}}\n\n<details>\n<summary>Uncategorized</summary>\n\n${{UNCATEGORIZED}}\n</details>",
-    "pr_template": "${{AUTHOR}} ${{URL}} ${{MERGED_AT}} ${{NUMBER}} ${{TITLE}}",
+    "empty_template": "<h2 class='text-2xl'>❌ <b>Whoops</b> there seem to be no changes in this release.</h2>",
+    "template": "${{CHANGELOG}}</ul></details>",
+    "pr_template": "<li>${{TITLE}} - ${{AUTHOR}}</li>",
     "sort": "DESC",
     "label_extractor": [
         {
