@@ -52,8 +52,8 @@ void setup()
             }},
         .soft = {
             .wifi = {
-                "HUAWEI-B311-8E2A",
-                "27393920",
+                "QiTech Konferenz",
+                "Malte100%",
                 "Jarvis Winder",
                 "",
                 "Jarvis Winder",
