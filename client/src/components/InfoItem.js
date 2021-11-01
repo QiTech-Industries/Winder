@@ -1,7 +1,7 @@
 const InfoItem = ({ data, headline }) => {
     return (
         <div class="mb-2">
-            <div class="mb-1 text-center underline">{headline}:</div>
+            <div class="mb-1 text-center underline text-primary">{headline}:</div>
             <div class="flex space-x-4">
                 <div class="text-left">
                     {
