@@ -33,8 +33,9 @@ module.exports = {
       purple: colors.violet,
       pink: colors.pink,
 
-      primary: '#3a3a3a',
-      secondary: '#ffb600',
+      primary: '#ffb600',
+      secondary: '#71aacc',
+      ternary: '#3a3a3a',
     },
     spacing: {
       px: '1px',
@@ -249,6 +250,7 @@ module.exports = {
     },
     fontFamily: {
       sans: [
+        'Nunito',
         'ui-sans-serif',
         'system-ui',
         '-apple-system',
