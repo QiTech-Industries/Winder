@@ -2,21 +2,26 @@ const WebSocket = require('ws')
 
 const wss = new WebSocket.Server({ port: 5001 });
 let status;
+let speed = 3;
+
+const getRandomSpeed = () => {
+    return Math.floor(Math.random() * 30 + (speed * 3));
+}
 
 const wind = () => {
     status = {
         s: {//spool
-            r: Math.floor(Math.random() * 50),//rpm
+            r: getRandomSpeed(),//rpm
             s: 0,//stall
             a: true,//active
         },
         p: {//puller
-            r: Math.floor(Math.random() * 50),
+            r: getRandomSpeed(),
             s: 0,
             a: true,
         },
         f: {//ferrari
-            r: Math.floor(Math.random() * 50),
+            r: getRandomSpeed(),
             s: 0,
             a: true,
         },
@@ -59,7 +64,7 @@ const unwind = () => {
             a: false,//active
         },
         p: {//puller
-            r: Math.floor(Math.random() * 50),
+            r: -getRandomSpeed(),
             s: 0,
             a: true,
         },
@@ -107,7 +112,7 @@ const pull = () => {
             a: true,//active
         },
         p: {//puller
-            r: Math.floor(Math.random() * 50),
+            r: getRandomSpeed(),
             s: 0,
             a: true,
         },
@@ -190,7 +195,6 @@ wss.on('connection', function connection(ws) {
                 break;
 
             case "wind":
-                console.log(status.m);
                 if (json.data.mpm != 0) {
                     status.m = "winding"
                 }
@@ -200,7 +204,6 @@ wss.on('connection', function connection(ws) {
                 break;
 
             case "unwind":
-                console.log(status.m);
                 if (json.data.mpm != 0) {
                     status.m = "unwinding"
                 }
@@ -223,6 +226,17 @@ wss.on('connection', function connection(ws) {
 
             case "config":
                 send(json.event, config, 500);
+                break;
+
+            case "modify":
+                send(json.event, {});
+                break;
+
+            case "calibrate":
+                break;
+
+            case "speed":
+                speed = json.data.mpm;
                 break;
 
             default:
