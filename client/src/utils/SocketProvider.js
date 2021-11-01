@@ -1,7 +1,8 @@
 import { createContext } from 'preact';
 import { useContext, useEffect } from 'preact/hooks'
 import { socket } from "./socket"
-import { useToast } from '../utils/ToastProvider';
+import { useToast } from './ToastProvider';
+import { useStats } from './StatsProvider';
 
 const SocketContext = createContext();
 
@@ -10,28 +11,34 @@ export const useSocket = () => {
 }
 
 export const SocketProvider = ({ children }) => {
-    const { toast } = useToast();
+    const addToast = useToast(state => state.addToast)
+    const updateStats = useStats(state => state.stats.update)
 
     useEffect(() => {
         socket.on('error', () => {
-            toast.error("An error occured while communicating with the Winder.");
+            addToast("error", "An error occured while communicating with the Winder.");
         });
 
         // if the connection opens too fast this callback might not be registered yet
         socket.on('open', () => {
-            toast.success("Successfully connected to the Winder.");
+            addToast("success", "Successfully connected to the Winder.");
         });
 
         socket.on('close', () => {
-            toast.error("Connection to Winder failed.");
+            addToast("error", "Connection to Winder failed.");
         });
 
         socket.on('corrupt', () => {
-            toast.error("Message body could not be read.");
+            addToast("error", "Message body could not be read.");
         });
 
         socket.on('reload', () => {
-            toast.error("Maximum reconnects reached. Please reload the page manually.");
+            addToast("error", "Maximum reconnects reached. Please reload the page manually.");
+        });
+
+        socket.on("stats", data => {
+            if(!updateStats) return;
+            updateStats(data);
         });
     }, []);
 
