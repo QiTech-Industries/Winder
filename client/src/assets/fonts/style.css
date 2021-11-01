@@ -60,3 +60,6 @@
 .icon-question:before {
   content: "\e904";
 }
+.icon-close:before {
+  content: "\e90c";
+}
