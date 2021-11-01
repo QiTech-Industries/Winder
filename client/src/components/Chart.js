@@ -1,14 +1,5 @@
-import { Chart as Chartjs, LinearScale, BarElement, BarController, CategoryScale, LineController, LineElement, PointElement, Decimation, Filler, Legend, Title, Tooltip } from 'chart.js';
-Chartjs.register(
-    LinearScale,
-    BarElement,
-    BarController,
-    CategoryScale,
-    Decimation,
-    LineController,
-    PointElement,
-    LineElement
-);
+import { Chart as Chartjs, LinearScale, CategoryScale, LineController, LineElement, PointElement} from 'chart.js';
+Chartjs.register(LinearScale,CategoryScale,LineController,PointElement,LineElement);
 import { useEffect, useRef, useState } from 'preact/hooks'
 
 const config = {
@@ -19,7 +10,7 @@ const config = {
             {
                 data: [],
                 borderColor: [
-                    'rgba(75, 192, 192, 1)',
+                    'rgba(113, 170, 204, 1)',
                 ],
                 borderWidth: 3,
                 yAxisID: 'y',
@@ -38,6 +29,7 @@ const config = {
         ]
     },
     options: {
+        maintainAspectRatio: false,
         responsive: true,
         interaction: {
             mode: 'index',
@@ -74,12 +66,12 @@ const config = {
     },
 };
 
-const Chart = ({data}) => {
+const Chart = ({ data }) => {
     const chartContainer = useRef(null);
     const [chartInstance, setChartInstance] = useState(null);
 
     useEffect(() => {
-        if(!chartInstance) return;
+        if (!chartInstance) return;
         chartInstance.data.datasets[0].data = data;
         chartInstance.update();
     }, [data]);
@@ -91,7 +83,7 @@ const Chart = ({data}) => {
     }, [chartContainer]);
 
     return (
-        <canvas ref={chartContainer} height="260" class="h-52 w-full"></canvas>
+        <canvas ref={chartContainer}></canvas>
     )
 }
 
