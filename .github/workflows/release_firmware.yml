@@ -1,0 +1,30 @@
+name: Release Firmware
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'New Release Version vx.x.xf'
+        required: true
+
+jobs:
+  buildFirmware:
+    name: Build Firmware image
+    uses: QiTech-Industries/Winder/.github/workflows/firmware.yml@master
+  upload:
+    needs: buildFirmware
+    runs-on: ubuntu-latest
+    steps: 
+    - name: Download Build Artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: firmware
+        path: ./
+    - name: Upload Build to DB
+      uses: fjogeleit/http-request-action@master 
+      with:
+        url: 'https://update.qitech.de/firmware'
+        method: 'POST'
+        bearerToken: ${{ secrets.UPDATE_QITECH_DE }}
+        data: '{ "version": "${{ github.event.inputs.version }}", "type": "firmware" }'
+        files: '{ "file": "${{ github.workspace }}/firmware.bin" }'
