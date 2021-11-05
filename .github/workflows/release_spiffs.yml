@@ -33,11 +33,21 @@ jobs:
       id: tag_version
       uses: mathieudutour/github-tag-action@v5.6
       with:
+        tag_prefix: ''
         custom_tag: ${{ github.event.inputs.version }}
         github_token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Generate Changelog
+      id: build_changelog		
+      uses: mikepenz/release-changelog-builder-action@v2.4.3		
+      with:		
+        configuration: release-conf.json		
+        commitMode: true		
+      env:		
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Create a GitHub release
       uses: ncipollo/release-action@v1
       with:
         tag: ${{ steps.tag_version.outputs.new_tag }}
         name: SPIFFS ${{ steps.tag_version.outputs.new_tag }}
-        body: ${{ steps.tag_version.outputs.changelog }}
+        body: ${{ steps.build_changelog.outputs.changelog }}
+        artifacts: ${{ github.workspace }}/spiffs.bin
