@@ -176,11 +176,11 @@ wss.on('connection', function connection(ws) {
             case "scan":
                 send(json.event, {
                     networks: [
-                        { rssi: -72, ssid: "Mein Netzwerk", secure: 1 },
-                        { rssi: -90, ssid: "Dein Netzwerk", secure: 0 },
-                        { rssi: -5, ssid: "Unser Netzwerk", secure: 2 },
-                        { rssi: -72, ssid: "Mein Netzwerk", secure: 1 },
-                        { rssi: -110, ssid: "Das Netzwerk", secure: 3 }],
+                        { rssi: -72, ssid: "My Network", secure: 1 },
+                        { rssi: -90, ssid: "Your Network", secure: 0 },
+                        { rssi: -5, ssid: "Our Network", secure: 2 },
+                        { rssi: -72, ssid: "Their Network", secure: 1 },
+                        { rssi: -110, ssid: "Hidden Network", secure: 3 }],
                     current: config.wifi.ssid
                 }, 1000);
                 break;
