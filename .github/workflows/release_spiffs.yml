@@ -1,0 +1,30 @@
+name: Release spiffs
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'New Release Version vx.x.xs'
+        required: true
+
+jobs:
+  buildSpiffs:
+    name: Build Filesystem image
+    uses: QiTech-Industries/Winder/.github/workflows/spiffs.yml@master
+  upload:
+    needs: buildSpiffs
+    runs-on: ubuntu-latest
+    steps: 
+    - name: Download Build Artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: spiffs
+        path: ./
+    - name: Upload Build to DB
+      uses: fjogeleit/http-request-action@master 
+      with:
+        url: 'https://update.qitech.de/firmware'
+        method: 'POST'
+        bearerToken: ${{ secrets.UPDATE_QITECH_DE }}
+        data: '{ "version": "${{ github.event.inputs.version }}", "type": "spiffs" }'
+        files: '{ "file": "${{ github.workspace }}/spiffs.bin" }'
