@@ -104,7 +104,6 @@ public:
 
             strcpy(soft.wifi.ssid, _ssid);
             strcpy(soft.wifi.password, _password);
-            soft.store();
 
             _currentTimeout = 0;
 
@@ -138,7 +137,6 @@ public:
                 {
                     DEBUG_PRINTLN("[Wifi] Starting in AP mode instead.");
                     soft.wifi.ap_enabled = true;
-                    soft.store();
                     createAP("Winder", "");
                 }
             }

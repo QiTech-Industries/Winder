@@ -20,16 +20,16 @@ float_t maxRpm; // 14m/min / (0,1m*pi)
 //uint16_t stepperCs = 5;
 
 // Puller
-uint16_t stepperDir = 27;
-uint16_t stepperEn = 12;
-uint16_t stepperStep = 25;
-uint16_t stepperCs = 2;
+//uint16_t stepperDir = 27;
+//uint16_t stepperEn = 12;
+//uint16_t stepperStep = 25;
+//uint16_t stepperCs = 2;
 
 // Ferrari
-//uint16_t stepperDir = 14;
-//uint16_t stepperEn = 12;
-//uint16_t stepperStep = 17;
-//uint16_t stepperCs = 13;
+uint16_t stepperDir = 14;
+uint16_t stepperEn = 12;
+uint16_t stepperStep = 17;
+uint16_t stepperCs = 13;
 
 uint16_t stepperMicrosteps = 16;
 uint16_t stepsPerRotation = 200;
@@ -50,7 +50,7 @@ float_t microstepsPerRotation;
 
 FastAccelStepperEngine engine = FastAccelStepperEngine();
 FastAccelStepper *stepper = NULL;
-TMC2130Stepper driver(stepperCs, 0.11f); 
+TMC2130Stepper driver(stepperCs, 0.11f);
 
 float_t rpm2us(float_t rpm)
 {
@@ -81,7 +81,7 @@ void instructions()
 {
     Serial.println("\n 🛈 Der Motor wird nun von der minimalen bis zur maximalen Geschwindigkeit beschleunigen.");
     Serial.println("🛈 Sobald der Motor aufhört zu beschleunigen muss der Motor per Hand bis zum Stall gebremst werden.");
-    Serial.println("🛈 Der Stall Wert, der bei maximaler Last angezeigt wird muss dann in die Konsole eingegeben werden.");
+    Serial.println("🛈 Der Stall Wert, bei maximaler Last wird bei Enter automatisch gespeichert.");
     Serial.println("🛈 Der Motor beschleunigt dann zum nächsten Punkt weiter.");
     Serial.println("🛈 Sobald die Kalibration abgeschlossen ist werden die gemessenen Werte als CSV für die Weiterverarabeitung ausgegeben.");
     waitForEnter();
@@ -107,7 +107,7 @@ void setConfig()
     minRpm = waitForEnter().toFloat();
     Serial.println("maxRpm (maximale Geschwindigkeit, bei der die Stall Erkennung funktionieren muss)");
     maxRpm = waitForEnter().toFloat();
-    Serial.println("stepperGearRatio (entweder 1 oder 1/13.73 oder 1/5.18 als float)");
+    Serial.println("stepperGearRatio (entweder 1 oder 13.73 oder 5.18 als float)");
     stepperGearRatio = waitForEnter().toFloat();
 
     stepWidth = (maxRpm - minRpm) / (calibrationCount - 1);
@@ -157,9 +157,9 @@ void resultAsCsv()
     String result;
 
     Serial.println("\n🛈 Die Kalibration wurde erfolgreich abgeschlossen!");
-    Serial.println("🛈 Die Werte in der CSV sind wie folgt angeordnet: Rpm, Geschwindigkeit Us, Stall-Wert bei keiner Last, Stall-Wert bei maximaler Last.");
+    Serial.println("🛈 Die Werte in der CSV sind wie folgt angeordnet: Geschwindigkeit Rpm, Geschwindigkeit Us, Stall-Wert bei keiner Last, Stall-Wert bei maximaler Last.");
     Serial.println("🛈 Punkte müssen für ein korrekte Verarbeitung in der Tabellenkalkulation durch Kommas ersetzt werden");
-    Serial.println("🛈 Terminalgröße keinesfalls verändern, da sonst Werte verloren gehen können.\n");
+    Serial.println("🛈 Terminalgröße keinesfalls verändern, da sonst Werte verloren gehen können (VsCode).\n");
     for (auto i = datapoints.begin(); i != datapoints.end(); i++)
     {
         result += i->Rpm;
@@ -175,19 +175,16 @@ void resultAsCsv()
     Serial.println(result);
 }
 
-void start()
+void doCalibration()
 {
-    setConfig();
-    printConfig();
-    instructions();
-
     for (uint8_t i = 0; i < calibrationCount; i++)
     {
         float_t targetRpm = minRpm + stepWidth * i;
         float_t targetUs = rpm2us(targetRpm);
+        float_t currentUs = stepper->getCurrentSpeedInUs();
 
         Serial.print("\n==> currentRpm: ");
-        Serial.print(us2rpm(stepper->getCurrentSpeedInUs()));
+        Serial.print(us2rpm(currentUs));
         Serial.print("  targetRpm: ");
         Serial.print(targetRpm);
         Serial.print("  CalibrationPoint: ");
@@ -198,18 +195,59 @@ void start()
         stepper->applySpeedAcceleration();
         stepper->runForward();
 
-        // wait until motor has started accellerating
-        while (!stepper->getCurrentAcceleration())
+        if (i != 0)
         {
-        };
-        // wait until motor has finished accellerating
-        while (stepper->getCurrentAcceleration())
-        {
-        };
+            // wait until motor has started accellerating
+            while (!stepper->getCurrentAcceleration())
+            {
+            };
+            // wait until motor has finished accellerating
+            while (stepper->getCurrentAcceleration())
+            {
+            };
+        }
         addCalibrationPoint();
     }
 
     driver.toff(0);
+}
+
+void adjustStall()
+{
+    Serial.println("🛈 Der Stall Wert des Motors wird automatisch angepasst. Bitte bis zum nächsten Schritt warten.");
+
+    stepper->setSpeedInUs(rpm2us(minRpm));
+    stepper->applySpeedAcceleration();
+    stepper->runForward();
+
+    for (uint8_t i = 0; i < 64; i++)
+    {
+        driver.sgt(i);
+        delay(400); //Reliable results only after 400ms delay
+        DRV_STATUS_t drv_status{0};
+        drv_status.sr = driver.DRV_STATUS();
+
+        Serial.print("STALL: ");
+        Serial.print(i);
+        Serial.print("  LOAD: ");
+        Serial.println(drv_status.sg_result);
+
+        if (drv_status.sg_result == 1023)
+        {
+            Serial.println("CALIBRATED STALL VALUE: ");
+            Serial.println(i);
+            break;
+        }
+    }
+}
+
+void start()
+{
+    setConfig();
+    printConfig();
+    adjustStall();
+    instructions();
+    doCalibration();
     resultAsCsv();
 }
 
@@ -227,7 +265,6 @@ void setup()
     driver.blank_time(5);
     driver.rms_current(700);
     driver.microsteps(stepperMicrosteps);
-    driver.sgt(34);
     driver.sfilt(true);
 
     // StallGuard/Coolstep config

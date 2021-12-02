@@ -19,6 +19,7 @@ enum mode_e
     CALIBRATING,
     WINDING,
     UNWINDING,
+    CHANGING
 };
 
 enum commands_s

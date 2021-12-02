@@ -3,6 +3,8 @@
 #include <Webserver.cpp>
 #include <Stepper.cpp>
 #include <Updater.cpp>
+#include "soc/soc.h"
+#include "soc/rtc_cntl_reg.h"
 
 Updater updater;
 Wifi wifi;
@@ -88,6 +90,7 @@ void calibrate(uint16_t position, bool startPos = true)
 
     ferrari.add({2, position, POSITION, []
                  {
+                   Serial.println("Callback");
                    isMode(POWER);
                  }});
   }
@@ -96,7 +99,6 @@ void calibrate(uint16_t position, bool startPos = true)
     soft.ferrari_min = position;
   else
     soft.ferrari_max = position;
-  soft.store();
 }
 
 void updateFerrariSpeed()
@@ -131,12 +133,21 @@ void wind(float mpm)
   timer.start();
 }
 
+void change()
+{
+  ferrari.on();
+  spool.on();
+  ferrari.add({.rps = 2, .mm = soft.ferrari_max, POSITION});
+  mode = CHANGING;
+};
+
 // Send machine status to web ui every Xs
 ///////////////////////////////////
 void reportStatus()
 {
   if (connection == CONNECTING)
     return;
+  
   StaticJsonDocument<512> doc;
   String json;
 
@@ -144,7 +155,10 @@ void reportStatus()
   auto sS = spool.getStatus();
   auto pS = puller.getStatus();
 
-  Serial.println(fS.error);
+  //soft.store(); //must be called async or esp might crash on watchdog trigger
+
+  //Serial.println(fS.error);
+  //Serial.println(fS.rpm);
 
   doc["f"]["r"] = fS.rpm;
   doc["f"]["s"] = fS.stall;
@@ -180,6 +194,7 @@ class Winder
 public:
   void setup(config_s conf)
   {
+    //WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
     printBanner();
 
     // Load config from main.cpp
@@ -187,20 +202,30 @@ public:
     hard = conf.hard;
     soft = conf.soft;
     ///////////////////////////////////
-
+    
     // Initialize Stepper Motors
     ///////////////////////////////////
-    ferrari.init(hard.motors.ferrari);
     spool.init(hard.motors.spool);
+    ferrari.init(hard.motors.ferrari);
     puller.init(hard.motors.puller);
     ///////////////////////////////////
 
     // Load config from SPIFFS and BLYNK
     ///////////////////////////////////
     if (soft.load())
+    {
       power(true);
+      ferrari.debug();
+      //ferrari.add({.rps = -2, .mm = 1, ROTATE});
+      //spool.calibrateStall(1);
+      //puller.add({.rps = 3, .mm = 0, ADJUST});
+      //spool.add({.rps = -2, .mm = 1, ROTATE});
+      //spool.calibrateStall(1);
+    }
     else
+    {
       power(false);
+    }
     DEBUG_PRINTLN(soft.asJSON());
     ///////////////////////////////////
 
@@ -275,11 +300,16 @@ public:
                 pull(mpm);
                 return String();
               });
+    server.on("change", [](JsonObject data)
+              {
+                change();
+                return String();
+              });
     server.on("speed", [](JsonObject data)
               {
                 float mpm = data["mpm"].as<float>();
                 float speed = mpm * 1000 / hard.motors.puller.mm_per_rotation / 60;
-                if (mode == WINDING || mode == PULLING)
+                if (mode == WINDING || mode == PULLING || mode == CHANGING)
                   puller.setSpeed(speed);
                 else if (mode == UNWINDING)
                   puller.setSpeed(-speed);
@@ -296,8 +326,6 @@ public:
                 {
                   strcpy(soft.wifi.ap_ssid, data["ap_ssid"]);
                 }
-
-                soft.store();
                 return String("\"stored\"");
               });
     server.on("config", [](JsonObject data)
