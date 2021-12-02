@@ -39,6 +39,6 @@ jobs:
     - name: 'Upload Artifact'
       uses: actions/upload-artifact@v2
       with:
-        name: frimware
+        name: firmware
         path: ./esp/.pio/build/esp32dev/firmware.bin
         retention-days: 30
