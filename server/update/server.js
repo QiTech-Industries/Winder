@@ -72,7 +72,7 @@ app.get('/success/:mac', async (req, res, next) => {
 
   completeUpdate(mac);
   log(ip, "success", mac);
-  return next({ code: 204, message: "update success registered" })
+  return next({ code: 201, message: "update success registered" })
 });
 
 // Upload new firmware release to DB
