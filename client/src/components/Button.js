@@ -9,7 +9,7 @@ const Button = ({ secondary, onClick, children, disabled, custom }) => {
         <button onClick={handleClick} class={`
         ${secondary
                 ?
-                "bg-blue-300 hover:bg-blue-400 focus:bg-blue-400 focus:ring-2 focus:ring-blue-600"
+                "bg-secondary hover:bg-blue-400 focus:bg-blue-400 focus:ring-2 focus:ring-blue-600 text-white shadow-md"
                 :
                 "bg-gray-200 hover:bg-gray-300 focus:bg-gray-300 focus:ring-2 focus:ring-gray-500"
             }

@@ -1,6 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@font-face {
+	font-family: Nunito;
+	src: url('/assets/fonts/Nunito.ttf')
+};
 @import '/assets/fonts/style.css';
 /*Help Tooltips*/
 

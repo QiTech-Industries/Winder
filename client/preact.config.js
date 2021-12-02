@@ -1,7 +1,9 @@
-const preactCliPostCSS = require('preact-cli-postcss');
+import preactCliPostCSS from 'preact-cli-postcss';
+import envVars from 'preact-cli-plugin-env-vars';
 
 export default (config, env, helpers) => {
 	preactCliPostCSS(config, helpers);
+	envVars(config, env, helpers);
 	if (env.isProd) {
 		config.devtool = false; // disable sourcemaps
 	}
@@ -19,58 +21,3 @@ export default (config, env, helpers) => {
 	};
 	// console.log(config.module.rules);
 }
-
-import {
-	Chart,
-	ArcElement,
-	LineElement,
-	BarElement,
-	PointElement,
-	BarController,
-	BubbleController,
-	DoughnutController,
-	LineController,
-	PieController,
-	PolarAreaController,
-	RadarController,
-	ScatterController,
-	CategoryScale,
-	LinearScale,
-	LogarithmicScale,
-	RadialLinearScale,
-	TimeScale,
-	TimeSeriesScale,
-	Decimation,
-	Filler,
-	Legend,
-	Title,
-	Tooltip,
-	SubTitle
-} from 'chart.js';
-
-Chart.register(
-	ArcElement,
-	LineElement,
-	BarElement,
-	PointElement,
-	BarController,
-	BubbleController,
-	DoughnutController,
-	LineController,
-	PieController,
-	PolarAreaController,
-	RadarController,
-	ScatterController,
-	CategoryScale,
-	LinearScale,
-	LogarithmicScale,
-	RadialLinearScale,
-	TimeScale,
-	TimeSeriesScale,
-	Decimation,
-	Filler,
-	Legend,
-	Title,
-	Tooltip,
-	SubTitle
-);

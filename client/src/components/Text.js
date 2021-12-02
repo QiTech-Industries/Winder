@@ -6,9 +6,9 @@ const Text = ({ placeholder, tooltip, label, unit, value, onInput }) => {
             <Label tooltip={tooltip} label={label} />
             <div class="flex">
                 <input class={`
-                min-w-0 appearance-none block w-full bg-white text-gray-700 border border-gray-400 shadow-inner py-3 px-4 leading-tight focus:outline-none  focus:border-gray-500
+                min-w-0 appearance-none block w-full bg-white text-ternary border border-gray-400 shadow-inner py-3 px-4 leading-tight focus:outline-none  focus:border-gray-500
                 ${unit ? "rounded-l-md" : "rounded-md"}
-                `} type='text' placeholder={placeholder} value={value} onBlur={e => onInput(e.target.value)} />
+                `} type='text' placeholder={placeholder} value={value} onBlur={e => onInput(e.target.value)}/>
                 {
                     unit
                         ?
@@ -23,6 +23,6 @@ const Text = ({ placeholder, tooltip, label, unit, value, onInput }) => {
             </div>
         </div>
     )
-}
+};
 
 export default Text

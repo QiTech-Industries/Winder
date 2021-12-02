@@ -11,8 +11,8 @@ const Switch = ({on, onChange, left, right}) => {
                 <div class={`
                         w-14 h-7 flex items-center rounded-full mx-3 my-2 px-1
                         ${on
-                        ? "bg-green-500"
-                        : "bg-red-500"
+                        ? "bg-green-700"
+                        : "bg-gray-400"
                     }
                         `}>
                     <div class={`

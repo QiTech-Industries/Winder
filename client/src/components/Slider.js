@@ -17,7 +17,7 @@ const Range = (props) => {
     const minTrigger = (input = min.value) => {
         let value = input < minRange ? minRange : (input > maxRange ? maxRange : input);
         let thumb = ((value - minRange) / (maxRange - minRange)) * 100;
-        setMin({ ...min, value, thumb });
+        setMin({value, thumb});
 
         valRef.current = value;
         setTimeout(value => {
@@ -31,6 +31,7 @@ const Range = (props) => {
     }, []);
 
     return (
+        <div class="flex items-center space-x-2">
         <div class="relative w-full">
             <div>
                 <input type="range"
@@ -43,18 +44,18 @@ const Range = (props) => {
 
                 <div class="relative z-10 h-2">
 
-                    <div class="absolute z-10 left-0 right-0 bottom-0 top-0 rounded-md bg-gray-200"></div>
+                    <div class="absolute z-10 left-0 right-0 bottom-0 top-0 rounded-md bg-gray-400"></div>
 
-                    <div class="absolute z-20 top-0 bottom-0 bg-red-300 rounded-full" style={{ left: 0, width: `${min.thumb}%` }}></div>
+                    <div class="absolute z-20 top-0 bottom-0 bg-primary rounded-full" style={{ left: 0, width: `${min.thumb}%`}}></div>
 
-                    <div class="absolute z-30 w-6 h-6 top-0 right-0 bg-green-300 rounded-full -mt-2" style={{ left: `calc(${min.thumb}% - (${min.thumb * 0.24}px))` }}></div>
+                    <div class="absolute z-30 w-6 h-6 top-0 right-0 rounded-full -mt-2 bg-ternary" style={{ left: `calc(${min.thumb}% - (${min.thumb * 0.24}px))`}}></div>
 
                 </div>
             </div>
-
-            <div class="w-full md:w-44 py-4">
-                <Number value={min.value} onChange={minTrigger} step={props.step} unit="m/min" />
-            </div>
+        </div>
+        <div class="w-32">
+        <Number value={min.value} onChange={minTrigger} step={props.step} unit="m/min" />
+        </div>
         </div>
     )
 };

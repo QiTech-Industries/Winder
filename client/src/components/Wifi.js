@@ -13,10 +13,10 @@ const Wifi = () => {
     const [showInput, setShowInput] = useState(null);
     const [connecting, setConnecting] = useState(null);
     const [connected, setConnected] = useState(null);
-    const [password, setPassword] = useState();
+    const [password, setPassword] = useState("");
 
     const { socket } = useSocket();
-    const { toast } = useToast();
+    const addToast = useToast(state => state.addToast)
 
     const security = [
         "Open", "WEP", "WPA/PSK", "WPA2/PSK", "WPA2/PSK", "unknown", "unknown", "unknown"
@@ -69,11 +69,11 @@ const Wifi = () => {
             if (data === "connected") {
                 setLoading(false);
                 setShowInput(null);
-                toast.success(`Successfully connected to network '${name}'`);
+                addToast("success", `Successfully connected to network '${name}'`);
                 setConnected(id);
             }
             else if (data === "failed") {
-                toast.error(`Connection to network '${name}' failed.`);
+                addToast("error", `Connection to network '${name}' failed.`);
             }
         });
     }

@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "preact/hooks"
 import Number from "./Number"
-import Text from "./Text";
 
 const Range = (props) => {
 
@@ -78,13 +77,13 @@ const Range = (props) => {
 
                 <div class="relative z-10 h-2">
 
-                    <div class="absolute z-10 left-0 right-0 bottom-0 top-0 rounded-md bg-gray-200"></div>
+                    <div class="absolute z-10 left-0 right-0 bottom-0 top-0 rounded-md bg-gray-400"></div>
 
-                    <div class="absolute z-20 top-0 bottom-0 bg-red-300" style={{ right: `calc(${max.thumb}% - (${max.thumb * 0.24}px))`, left: `calc(${min.thumb}% - (${min.thumb * 0.24}px))` }}></div>
+                    <div class="absolute z-20 top-0 bottom-0 bg-primary" style={{ right: `calc(${max.thumb}% - (${max.thumb * 0.24}px))`, left: `calc(${min.thumb}% - (${min.thumb * 0.24}px))` }}></div>
 
-                    <div class="absolute z-30 w-6 h-6 top-0 left-0 bg-green-300 rounded-full -mt-2 -ml-3" style={{ left: `calc(${min.thumb}% - (${min.thumb * 0.24}px))` }}></div>
+                    <div class="absolute z-30 w-6 h-6 top-0 left-0 bg-secondary rounded-full -mt-2 -ml-3" style={{ left: `calc(${min.thumb}% - (${min.thumb * 0.24}px))` }}></div>
 
-                    <div class="absolute z-30 w-6 h-6 top-0 right-0 bg-green-300 rounded-full -mt-2 -mr-3" style={{ right: `calc(${max.thumb}% - (${max.thumb * 0.24}px))` }}></div>
+                    <div class="absolute z-30 w-6 h-6 top-0 right-0 bg-secondary rounded-full -mt-2 -mr-3" style={{ right: `calc(${max.thumb}% - (${max.thumb * 0.24}px))` }}></div>
 
                 </div>
             </div>

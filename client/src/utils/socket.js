@@ -42,7 +42,6 @@ class Socket {
     }
 
     on(event, callback) {
-        console.log(this.callbacks);
         this.callbacks[event] = callback;
     }
 
@@ -63,7 +62,6 @@ class Socket {
         const json = JSON.stringify({ event, data });
         if (!this.ws || this.ws.readyState !== 1) {
             !this.queue.includes(json) ? this.queue.push(json) : null;
-            console.log(this.queue);
             return;
         }
 
@@ -87,8 +85,6 @@ class Socket {
     }
 }
 
-const socket = new Socket('ws://winder.local/ws');
-//const socket = new Socket(`ws://${window.location.hostname}/ws`);
-//const socket = new Socket(`ws://localhost:5001/ws`);
+const socket = new Socket(`ws://${process.env.PREACT_APP_ENV == "prod" ? window.location.hostname : "localhost:5001"}/ws`)
 socket.open();
 export { socket };

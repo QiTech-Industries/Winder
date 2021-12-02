@@ -1,17 +1,17 @@
-import { useState } from "preact/hooks"
 import Range from "./Range"
 import Section from "./Section"
 import Text from "./Text"
 import Switch from "./Switch"
 import InfoItem from "./InfoItem"
+import { useRef, useEffect } from "preact/hooks"
 import { useConfig } from "../utils/ConfigProvider"
 import { useSocket } from "../utils/SocketProvider"
-import { useToast } from '../utils/ToastProvider'
+import { useToast } from "../utils/ToastProvider"
 
 const Config = () => {
     const { config, setConfig } = useConfig();
     const { socket } = useSocket();
-    const { toast } = useToast();
+    const addToast = useToast(state => state.addToast)
 
     const calibrate = (position, startPos) => {
         const newConfig = {...config};
@@ -36,12 +36,12 @@ const Config = () => {
             ap_enabled: newConfig.wifi.ap_enabled
         }
         socket.emit("modify", wifi, () => {
-            toast.success("Configuration successfully updated. Please restart.");
+            addToast("success","Configuration successfully updated. Please restart.");
         });
     }
 
     return (
-        <div class="items-center w-full md:w-3/4 mx-auto h-full px-4 text-white">
+        <div class="max-w-6xl w-full mx-auto py-4 px-4 text-white">
             <Section title="WIFI">
                 <Text onInput={val => updateWifi("mdns_name", val.toLowerCase())} placeholder="winder" value={config.wifi.mdns_name} tooltip="This will change the URL of the webinterface." label="Device Name" unit=".local" />
                 <Text onInput={val => updateWifi("ap_ssid", val)} placeholder="Jarvis Winder" value={config.wifi.ap_ssid} tooltip="Name of the network the winder creates." label="Access Point Name" />

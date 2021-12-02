@@ -2,25 +2,54 @@ const WebSocket = require('ws')
 
 const wss = new WebSocket.Server({ port: 5001 });
 let status;
+let speed = 3;
+
+const getRandomSpeed = () => {
+    return Math.floor(Math.random() * 30 + (speed * 3));
+}
 
 const wind = () => {
     status = {
         s: {//spool
-            r: Math.floor(Math.random() * 50),//rpm
+            r: getRandomSpeed(),//rpm
             s: 0,//stall
             a: true,//active
         },
         p: {//puller
-            r: Math.floor(Math.random() * 50),
+            r: getRandomSpeed(),
             s: 0,
             a: true,
         },
         f: {//ferrari
-            r: Math.floor(Math.random() * 50),
+            r: getRandomSpeed(),
             s: 0,
             a: true,
         },
         m: "winding",//mode
+        w: status.w + 1, // total windings
+        l: status.w + 1, // total length
+        e: null//error
+    };
+}
+
+const change = () => {
+    status = {
+        s: {//spool
+            r: 0,//rpm
+            s: 0,//stall
+            a: false,//active
+        },
+        p: {//puller
+            r: getRandomSpeed(),
+            s: 0,
+            a: true,
+        },
+        f: {//ferrari
+            r: 0,
+            s: 0,
+            a: true,
+        },
+        m: "changing",//mode
         w: status.w + 1, // total windings
         l: status.w + 1, // total length
         e: null//error
@@ -59,7 +88,7 @@ const unwind = () => {
             a: false,//active
         },
         p: {//puller
-            r: Math.floor(Math.random() * 50),
+            r: -getRandomSpeed(),
             s: 0,
             a: true,
         },
@@ -107,7 +136,7 @@ const pull = () => {
             a: true,//active
         },
         p: {//puller
-            r: Math.floor(Math.random() * 50),
+            r: getRandomSpeed(),
             s: 0,
             a: true,
         },
@@ -171,11 +200,11 @@ wss.on('connection', function connection(ws) {
             case "scan":
                 send(json.event, {
                     networks: [
-                        { rssi: -72, ssid: "Mein Netzwerk", secure: 1 },
-                        { rssi: -90, ssid: "Dein Netzwerk", secure: 0 },
-                        { rssi: -5, ssid: "Unser Netzwerk", secure: 2 },
-                        { rssi: -72, ssid: "Mein Netzwerk", secure: 1 },
-                        { rssi: -110, ssid: "Das Netzwerk", secure: 3 }],
+                        { rssi: -72, ssid: "My Network", secure: 1 },
+                        { rssi: -90, ssid: "Your Network", secure: 0 },
+                        { rssi: -5, ssid: "Our Network", secure: 2 },
+                        { rssi: -72, ssid: "Their Network", secure: 1 },
+                        { rssi: -110, ssid: "Hidden Network", secure: 3 }],
                     current: config.wifi.ssid
                 }, 1000);
                 break;
@@ -190,7 +219,6 @@ wss.on('connection', function connection(ws) {
                 break;
 
             case "wind":
-                console.log(status.m);
                 if (json.data.mpm != 0) {
                     status.m = "winding"
                 }
@@ -200,7 +228,6 @@ wss.on('connection', function connection(ws) {
                 break;
 
             case "unwind":
-                console.log(status.m);
                 if (json.data.mpm != 0) {
                     status.m = "unwinding"
                 }
@@ -225,6 +252,21 @@ wss.on('connection', function connection(ws) {
                 send(json.event, config, 500);
                 break;
 
+            case "modify":
+                send(json.event, {});
+                break;
+
+            case "calibrate":
+                break;
+
+            case "speed":
+                speed = json.data.mpm;
+                break;
+
+            case "change":
+                status.m = "changing";
+                break;
+
             default:
                 console.log("unknown event");
                 break;
@@ -247,6 +289,10 @@ wss.on('connection', function connection(ws) {
 
             case "pulling":
                 pull();
+                break;
+
+            case "changing":
+                change();
                 break;
 
             default:

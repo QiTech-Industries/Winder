@@ -6,30 +6,30 @@ import Winder from "./components/Winder"
 import Config from './components/Config';
 import Welcome from "./components/Welcome"
 import Toast from './components/Toast';
+import Modal from './components/Modal';
+import Page from './components/Page';
 import { SocketProvider } from './utils/SocketProvider'
-import { ToastProvider } from './utils/ToastProvider'
 import { ConfigProvider } from './utils/ConfigProvider'
-import { StatsProvider } from './utils/StatsProvider'
+import { ModalProvider } from './utils/ModalProvider'
 
 export default function App() {
 	return (
-		<div class="bg-gray-900 min-h-screen font-mono flex flex-col">
-			<ToastProvider>
-				<SocketProvider>
-					<ConfigProvider>
-						<StatsProvider>
-							<Navbar />
-							<Router>
-								<Welcome path="/" />
-								<Wifi path="connect" />
-								<Winder path="control" />
-								<Config path="configure" />
-							</Router>
-							<Toast />
-						</StatsProvider>
-					</ConfigProvider>
-				</SocketProvider>
-			</ToastProvider>
-		</div>
+		<ModalProvider>
+			<SocketProvider>
+				<ConfigProvider>
+					<Page>
+						<Navbar />
+						<Router>
+							<Welcome path="/" />
+							<Wifi path="connect" />
+							<Winder path="control" />
+							<Config path="configure" />
+						</Router>
+						<Toast />
+						<Modal />
+					</Page>
+				</ConfigProvider>
+			</SocketProvider>
+		</ModalProvider>
 	);
 }

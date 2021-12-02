@@ -19,7 +19,7 @@ const Navbar = () => {
                     />
                 </a>
 
-                <h1 class="text-gray-700 font-bold hidden md:block">JARVIS Winder</h1>
+                <h1 class="text-ternary font-bold hidden md:block absolute left-1/2 transform -translate-x-1/2">JARVIS Winder</h1>
 
                 <ul class="w-full flex justify-around max-w-sm">
                     {

@@ -69,12 +69,17 @@ const registerWinder = async (mac) => {
     await db.query(sql, data);
 }
 
+const createFirmware = async (data) => {
+    sql = "INSERT IGNORE INTO firmware SET ?";
+    const result = await db.query(sql, data);
+    return result[0].affectedRows;
+}
+
 const completeUpdate = async (mac) => {
-    console.log("complte");
     sql = `UPDATE devices SET current_spiffs = target_spiffs WHERE mac = ? AND status = 'updating_spiffs'`;
     await db.query(sql, mac);
     sql = `UPDATE devices SET current_firmware = target_firmware WHERE mac = ? AND status = 'updating_firmware'`;
     await db.query(sql, mac);
 }
 
-module.exports = { log, deviceExists, registerWinder, checkForDeviceUpdate, completeUpdate };
+module.exports = { log, deviceExists, registerWinder, checkForDeviceUpdate, completeUpdate, createFirmware };

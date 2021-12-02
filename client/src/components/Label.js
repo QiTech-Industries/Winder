@@ -8,7 +8,7 @@ const Label = ({ label, tooltip }) => {
                 {
                     tooltip
                         ? <Tooltip text={tooltip}>
-                            <i class="icon-question text-sm cursor-pointer"></i>
+                            <i class="icon-question text-sm cursor-pointer text-secondary"></i>
                         </Tooltip>
                         : null
                 }

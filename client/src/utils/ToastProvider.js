@@ -1,57 +1,24 @@
-import { createContext } from 'preact';
-import { useContext, useState, useReducer, useEffect } from 'preact/hooks'
+import create from 'zustand'
 
-const ToastContext = createContext();
-
-export const useToast = () => {
-    return useContext(ToastContext);
+const timeout = (ms) => { //pass a time in milliseconds to this function
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
+const showForMs = 3000;
 
-export const ToastProvider = ({ children }) => {
-    const reducer = (state, action) => {
-        switch (action.type) {
-            case 'add':
-                if (!state.some(object => JSON.stringify(object) === JSON.stringify(action.toast))) {
-                    if (state.length === 0) {
-                        clearInterval(timer);
-                        setTimer(setInterval(() => setToastQueue({ type: "remove" }), showForMicros));
-                    }
-                    return [...state, action.toast];
-                }
-                return state;
-            case 'remove':
-                if (state.length === 1) {
-                    clearInterval(timer);
-                }
-                return state.slice(1);
-            default:
-                throw new Error();
-        }
-    }
-
-    const showForMicros = 5e3;
-    const [toastQueue, setToastQueue] = useReducer(reducer, []);
-    const [timer, setTimer] = useState();
-
-    useEffect(() => {
-        return () => clearInterval(timer);
-    }, []);
-
-    const setToast = type => message => {
-        setToastQueue({ type: "add", toast: { message, type } });
-    };
-
-    const toast = {
-        error: setToast("error"),
-        success: setToast("success"),
-        warning: setToast("warning"),
-        info: setToast("info"),
-        current: toastQueue ? toastQueue[0] : null,
-    }
-
-    return (
-        <ToastContext.Provider value={{ toast }}>
-            {children}
-        </ToastContext.Provider>
-    )
-}
+export const useToast = create((set, get) => ({
+    addToast: (type, message) => {
+        const nextToast = { message, type };
+        set(prev => ({ queue: [...prev.queue, nextToast] }));
+        if (!get().toast) get().showNext();
+    },
+    showNext: () => {
+        const queue = get().queue;
+        set(prev => ({ toast: queue.length ? queue[0] : null, queue: prev.queue.slice(1) }))
+        if(!queue.length) return;
+        timeout(showForMs).then(() => {
+            get().showNext();
+        });
+    },
+    queue: [],
+    toast: null
+}));
