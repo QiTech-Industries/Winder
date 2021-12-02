@@ -16,16 +16,21 @@ const Winder = () => {
         {
             name: "Start Puller",
             action: () => socket.emit("pull", { mpm: speed }),
-            active: mode != "pulling" && mode != "winding"
+            active: mode != "pulling" && mode != "winding" && mode != "changing"
         },
         {
             name: "Start Winding",
             action: () => socket.emit("wind", { mpm: speed }),
-            active: mode == "pulling"
+            active: mode == "pulling" || mode == "changing"
         },
         {
             name: "Winding",
             action: () => socket.emit("power"),
+            active: mode == "winding"
+        },
+        {
+            name: "Change Spool",
+            action: () => socket.emit("change"),
             active: mode == "winding"
         },
         {

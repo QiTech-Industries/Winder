@@ -32,6 +32,30 @@ const wind = () => {
     };
 }
 
+const change = () => {
+    status = {
+        s: {//spool
+            r: 0,//rpm
+            s: 0,//stall
+            a: false,//active
+        },
+        p: {//puller
+            r: getRandomSpeed(),
+            s: 0,
+            a: true,
+        },
+        f: {//ferrari
+            r: 0,
+            s: 0,
+            a: true,
+        },
+        m: "changing",//mode
+        w: status.w + 1, // total windings
+        l: status.w + 1, // total length
+        e: null//error
+    };
+}
+
 const power = () => {
     status = {
         s: {//spool
@@ -239,6 +263,10 @@ wss.on('connection', function connection(ws) {
                 speed = json.data.mpm;
                 break;
 
+            case "change":
+                status.m = "changing";
+                break;
+
             default:
                 console.log("unknown event");
                 break;
@@ -261,6 +289,10 @@ wss.on('connection', function connection(ws) {
 
             case "pulling":
                 pull();
+                break;
+
+            case "changing":
+                change();
                 break;
 
             default:
