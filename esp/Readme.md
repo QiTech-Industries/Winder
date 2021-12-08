@@ -2,6 +2,8 @@
 Filament winding machine powererd by ESPdruino
 ##
 
+![image](https://user-images.githubusercontent.com/44653977/145229151-0e3af182-71b8-4e73-92b5-81c7ff54755a.png)
+Complete Spreadsheet: https://drive.google.com/file/d/1gbKM7DA7PI7s1-ne_VomcjOrb0bE2TPZ/view
 
 # Board Schematics
 ## Arduino + CNC Shield
