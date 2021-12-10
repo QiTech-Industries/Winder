@@ -16,6 +16,9 @@ Complete Spreadsheet: https://drive.google.com/file/d/1gbKM7DA7PI7s1-ne_VomcjOrb
 ## TMC21130 pin out
 ![TMC2130-Pinout-with-Legend-1](https://user-images.githubusercontent.com/61654753/126180279-9baa4cb1-23f9-4813-917e-d8515cacb58d.jpg)
 
+## ESP-Prog (Debug Board) Connection
+![image](https://user-images.githubusercontent.com/44653977/145601972-2034f089-48b3-4c26-a7a0-b06e2f7205e2.png)
+
 # Port Mappings
 | ESPdruino | Adruino | CNC Shield |
 |-----------|---------|------------|
