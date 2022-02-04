@@ -1,9 +1,9 @@
 #include <TMCStepper.h>
 
-uint8_t pin_en = 12;    // Enable
-uint8_t pin_dir = 16;   // Direction
-uint8_t pin_step = 26;  // Step
-uint8_t pin_cs = 5;     // Chip select
+uint8_t pin_en = 17;    // Enable
+uint8_t pin_dir = 19;   // Direction
+uint8_t pin_step = 33;  // Step
+uint8_t pin_cs = 34;     // Chip select
 float_t rsense = 0.11f; // SilentStepStick series use 0.11
 
 // stepper driver type
@@ -15,8 +15,10 @@ void setup()
   pinMode(pin_dir, OUTPUT);
   pinMode(pin_step, OUTPUT);
   digitalWrite(pin_en, LOW); // Enable driver in hardware
+  pinMode(0, OUTPUT);
+  digitalWrite(0, HIGH); // Enable driver in hardware
 
-  SPI.begin(); // Enable communication to drivers via SPI protocol
+  SPI.begin(14, 12, 13); // Enable communication to drivers via SPI protocol
 
   driver.begin();             // SPI: Init CS pins and possible SW SPI pins
   driver.toff(5);             // Enables driver in software

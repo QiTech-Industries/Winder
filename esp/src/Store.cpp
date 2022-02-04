@@ -3,6 +3,8 @@
 #include <LITTLEFS.h>
 #include <Preferences.h>
 
+Preferences prefs;
+
 String mode2string()
 {
     // Convert Mode enum to String
@@ -24,14 +26,15 @@ String mode2string()
     case UNWINDING:
         return "unwinding";
         break;
+    case CHANGING:
+        return "changing";
+        break;
     default:
         return "standby";
         break;
     }
     ///////////////////////////////////
 }
-
-Preferences prefs;
 
 String soft_config_s::asJSON()
 {
@@ -99,6 +102,7 @@ void soft_config_s::fromJSON(char *json)
 void soft_config_s::store()
 {
     // Save struct Config to Filesystem
+    // must be called async or esp might crash on watchdog trigger
     ///////////////////////////////////
     File f = LITTLEFS.open("/winder.conf", "w");
     if (f)
