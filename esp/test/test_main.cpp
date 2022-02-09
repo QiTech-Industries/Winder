@@ -1,6 +1,6 @@
 #include <unity.h>
 
-#include <helpers.cpp>
+#include <../lib/Stepper/helpers.cpp>
 
 // run tests with `pio test -e native` in console
 
@@ -22,6 +22,12 @@ void test_speedRpmToUs() {
     TEST_ASSERT_EQUAL_UINT32(9375, speedRpmToUs(1, 6400));
     TEST_ASSERT_EQUAL_UINT32(937, speedRpmToUs(-10, 6400));
     TEST_ASSERT_EQUAL_UINT32(0, speedRpmToUs(0, 0));
+}
+
+void test_modeToString() {
+    char out[15];
+    modeToString(POWER, out);
+    TEST_ASSERT_EQUAL_STRING("POWER", out);
 }
 
 void test_indexOfClosestNumberInSortedArray() {
@@ -47,6 +53,7 @@ int main() {
     RUN_TEST(test_speedUsToRpm);
     RUN_TEST(test_speedRpmToUs);
     RUN_TEST(test_indexOfClosestNumberInSortedArray);
+    RUN_TEST(test_modeToString);
 
     UNITY_END();
 }
