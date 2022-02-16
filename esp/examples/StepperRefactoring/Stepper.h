@@ -77,7 +77,7 @@ class Stepper {
 
     void home(float rpm);
 
-    void power();
+    void standby();
 
     void off();
 

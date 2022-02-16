@@ -87,7 +87,7 @@ bool Stepper::switchCurrentRecipeMode() {
     }
     if (isRecipeFinished() && _currentRecipe.mode == _targetRecipe.mode) {
         _targetRecipe = _defaultRecipe;
-        _targetRecipe.mode = POWER;
+        _targetRecipe.mode = STANDBY;
         return true;
     }
     if (_currentRecipe.mode != _targetRecipe.mode) {
@@ -181,9 +181,9 @@ void Stepper::home(float rpm) {
     _targetRecipe.rpm = rpm;
 }
 
-void Stepper::power() {
+void Stepper::standby() {
     _targetRecipe = _defaultRecipe;
-    _targetRecipe.mode = POWER;
+    _targetRecipe.mode = STANDBY;
 }
 
 void Stepper::off() { _targetRecipe = _defaultRecipe; }
