@@ -22,7 +22,7 @@ enum loggingLevel_e{
 bool isLogRelevant(loggingLevel_e currentLevel, loggingLevel_e messageLevel);
 
 /**
- * @brief Checks whether a message would be relevant enough to be logged given a current logging level, and printf's it to stdout if relevant
+ * @brief Checks whether a message would be relevant enough to be logged given a current logging level, and printf's it to stdout with the specific color if relevant
  * 
  * @param currentLevel current level for logging
  * @param messageLevel priority level of the message

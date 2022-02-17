@@ -1,17 +1,27 @@
 #pragma once
 #include <logging.h>
 
+#include <BaseController.h>
+
+struct heaterControllerParameters_s {
+    uint16_t id; // Controller id
+    float targetTemp; // Target temperature in degree celsius
+    uint8_t pinHeat; // Pin-number of the Pin of the SSR-40-relay
+    uint8_t pinSensorSo; // Pin-number of the SO-Pin of the MAX6675-sensor
+    uint8_t pinSensorCs; // Pin-number of the CS-Pin of the MAX6675-sensor
+    uint8_t pinSensorSck; // Pin-number of the SCK-Pin of the MAX6675-sensor
+};
+
 /**
  * @brief Controller of the Heating-Module with integrated temperature sensor
  * 
  * Turns a heater on and off, trying to maintain a define the specified temperature as stable as possible, using a PID-algorithm
  * TODO: Check code for potential issues on time-overflow
  */
-class HeatController{
+class HeatController : BaseController{
     private:
-        uint16_t _id; // Controller id
+        heaterControllerParameters_s _config; // Configuration parameters including pins
         loggingLevel_e _logging = NONE; // Logging level, no logging by default
-        float _targetTemperature; // Target temperature in degree celsius
 
         // Tweakable configuration parameters
         const uint16_t HEATER_ACTIVATION_CYCLE_MS = 3000; // Duration for simulating pwm-activation of the heater in m for the pid-temperature-regulation
@@ -20,12 +30,6 @@ class HeatController{
         const float PID_CONST_I = 0.3; // Adjustable parameter of the PID-algorithm
         const float PID_CONST_D = 1.8; // Adjustable parameter of the PID-algorithm
         const uint16_t DELAY_MEASUREMENTS_MS = 250; // Delay between temperature-measurements in ms
-
-        // Pins
-        uint8_t _pinHeat; // Pin-number of the Pin of the SSR-40-relay
-        uint8_t _pinSensorSo; // Pin-number of the SO-Pin of the MAX6675-sensor
-        uint8_t _pinSensorCs; // Pin-number of the CS-Pin of the MAX6675-sensor
-        uint8_t _pinSensorSck; // Pin-number of the SCK-Pin of the MAX6675-sensor
 
         // States
         enum module_state_e {INVALID, STANDBY, ACTIVE};
@@ -41,7 +45,6 @@ class HeatController{
 
         /**
          * @brief Checks whether a pin is valid and exists
-         * TODO: Move to helperclass?
          * 
          * @param pin Pin-number
          * @return true pin exists
@@ -50,13 +53,9 @@ class HeatController{
         bool isDigitalPinValid(uint8_t pin);
 
         /**
-         * @brief Initialises needed pins
-         * TODO: Candidate for moving into abstract class
-         * 
-         * @return true success
-         * @return false error, probably wrong pin-numbers
+         * @brief Initialises the controller, for example by setting pins
          */
-        void initPins();
+        void init();
 
         /**
          * @brief Calculation of changes needed for continuos temperature regulation via PID-algorithm
@@ -83,14 +82,9 @@ class HeatController{
         /**
          * @brief Constructor
          * 
-         * @param id ID of the controller
-         * @param targetTemp Target temperature in degree celsius, limited to 350 C
-         * @param pin_heat Pin-number of the SSR-40-relay
-         * @param pin_sensor_so Pin-number of the SO-Pin of the MAX6675-Temperatursensor
-         * @param pin_sensor_cs Pin-number of the CS-Pin of the MAX6675-Temperatursensor
-         * @param pin_sensor_sck Pin-number of the SCK-Pin of the MAX6675-Temperatursensor
+         * @param config Configuration parameters including pins to be used
          */
-        HeatController (uint16_t id, float targetTemp, uint8_t pin_heat, uint8_t pin_sensor_so, uint8_t pin_sensor_cs, uint8_t pin_sensor_sck);
+        HeatController (heaterControllerParameters_s config);
 
         /**
          * @brief Checks whether the Controller was succesfully initialised and can be used

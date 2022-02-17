@@ -8,6 +8,25 @@ bool isLogRelevant(loggingLevel_e currentLevel, loggingLevel_e messageLevel){
 void logPrint(loggingLevel_e currentLevel, loggingLevel_e messageLevel, char* message, ...){
     if(!isLogRelevant(currentLevel, messageLevel)) return;
 
+    // Set color according to messagelevel
+    switch(messageLevel){
+        case NONE:
+            Serial.print("\033[3;42;30m");
+            break;
+        case CRITICAL:
+            Serial.print("\033[3;60;30m");
+            break;
+        case ERROR:
+            Serial.print("\033[3;80;30m");
+            break;
+        case WARNING:
+            Serial.print("\033[3;100;30m");
+            break;
+        case INFO:
+            Serial.print("\033[3;120;30m");
+            break;
+    }
+
     // Adjusted copypasta from Print.cpp
     char loc_buf[64];
     char * temp = loc_buf;
@@ -34,6 +53,9 @@ void logPrint(loggingLevel_e currentLevel, loggingLevel_e messageLevel, char* me
     if(temp != loc_buf){
         free(temp);
     }
+
+    // reset color
+    Serial.print("\033[0m");
 }
 
 // TODO

@@ -2,6 +2,7 @@
 #include <HeatController.h>
 #include <logging.h>
 
+#include <McValidator.h>
 /**
  * @brief Calculates the difference of two millis()-timestamps
  * 
@@ -13,20 +14,21 @@ uint64_t timeDifference(uint64_t timestampStart, uint64_t timestampEnd){
     return timestampEnd - timestampStart; // TODO: Handle overflow, though not that important unless you plan to have the machine running > 50 days straight
 }
 
-HeatController::HeatController (uint16_t id, float targetTemp, uint8_t pin_heat, uint8_t pin_sensor_so, uint8_t pin_sensor_cs, uint8_t pin_sensor_sck) : _id(id), _pinHeat(pin_heat), _pinSensorSo(pin_sensor_so), _pinSensorCs(pin_sensor_cs), _pinSensorSck(pin_sensor_sck){
-    initPins();
+HeatController::HeatController(heaterControllerParameters_s config){
+    _config = config;
+    setTargetTemperature(config.targetTemp);
+
+    init();
     uint64_t now = millis();
     _timestampSensorPrepare = 0;
     _timestampSensorRead = now;
     _timestampHeatingChange = 0;
     _heatingState = false;
-    setTargetTemperature(targetTemp);
 }
 
 void HeatController::setTargetTemperature(float temperature){
-    _targetTemperature = temperature > 350 ? 350 : temperature;
+    _config.targetTemp = temperature > 350 ? 350 : temperature;
 }
-
 
 void HeatController::start(){
     if(!isReady()) return;
@@ -52,10 +54,10 @@ void HeatController::calculatePid(float currentTemperature, uint64_t currentTime
     float PID_i = 0;
     float PID_d = 0;
     float elapsedTime = (float) currentTime - (float) previousTime / 1000; // Time since last read in s
-    float PID_error = _targetTemperature - currentTemperature;
+    float PID_error = _config.targetTemp - currentTemperature;
     
-    logPrint(_logging, INFO, "{id: %d, timeNow: %d, timePrev: %d, timeD: %.3f, tempNow: %.2f, tempTarget: %.2f, p: %.2f, i: %.2f, d: %.2f, , pidErr: %.2f, _pidPrevErr: %.2f, pidVal: %.2f}\n",
-        _id, currentTime, previousTime, elapsedTime, currentTemperature, _targetTemperature, \
+    logPrint(_logging, INFO, "{id: %d, timeNow: %d, timePrev: %d, timeD: %d, tempNow: %.2f, tempTarget: %.2f, p: %.2f, i: %.2f, d: %.2f, , pidErr: %.2f, _pidPrevErr: %.2f, pidVal: %.2f}\n",
+        _config.id, currentTime, previousTime, elapsedTime, currentTemperature, _config.targetTemp, \
         PID_p, PID_i, PID_d, PID_error, _pidPreviousError, _pidValue);
 
     // Calulate PID
@@ -76,7 +78,7 @@ void HeatController::calculatePid(float currentTemperature, uint64_t currentTime
 }
 
 void HeatController::activateHeater(bool active, bool updateStates){
-    digitalWrite(_pinHeat, active ? HIGH : LOW);
+    digitalWrite(_config.pinHeat, active ? HIGH : LOW);
     if(updateStates){
         _heatingState = active;
         _timestampHeatingChange = millis();
@@ -103,11 +105,11 @@ void HeatController::handle(){
 
     // Adjust heating according to values calculated by PID
     if(_heatingState && timeDifference(_timestampHeatingChange, now)>_pidValue && _pidValue<HEATER_ACTIVATION_CYCLE_MS){
-        logPrint(_logging, WARNING, "{id: %d, time: %d, action=\"stop heat\"}\n", _id, now);
+        logPrint(_logging, WARNING, "{id: %d, time: %d, action=\"stop heat\"}\n", _config.id, now);
         activateHeater(false, true);
     }
     else if(!_heatingState && timeDifference(_timestampHeatingChange, now)>(HEATER_ACTIVATION_CYCLE_MS-_pidValue) && _pidValue>0){
-        logPrint(_logging, WARNING, "{id: %d, time: %d, action=\"start heat\"}\n", _id, now);
+        logPrint(_logging, WARNING, "{id: %d, time: %d, action=\"start heat\"}\n", _config.id, now);
         activateHeater(true, true);
     }
 }
@@ -141,22 +143,22 @@ bool HeatController::isDigitalPinValid(uint8_t pin){
     }
 }
 
-void HeatController::initPins(){
+void HeatController::init(){
     _controllerState = INVALID;
-    if(!isDigitalPinValid(_pinHeat)) return;
-    if(!isDigitalPinValid(_pinSensorSo)) return;
-    if(!isDigitalPinValid(_pinSensorCs)) return;
-    if(!isDigitalPinValid(_pinSensorSck)) return;
-    pinMode(_pinHeat, OUTPUT);
-    pinMode(_pinSensorCs, OUTPUT);
-    pinMode(_pinSensorSo, INPUT);
-    pinMode(_pinSensorSck, OUTPUT);
+    if(!isDigitalPinValid(_config.pinHeat)) return;
+    if(!isDigitalPinValid(_config.pinSensorSo)) return;
+    if(!isDigitalPinValid(_config.pinSensorCs)) return;
+    if(!isDigitalPinValid(_config.pinSensorSck)) return;
+    pinMode(_config.pinHeat, OUTPUT);
+    pinMode(_config.pinSensorCs, OUTPUT);
+    pinMode(_config.pinSensorSo, INPUT);
+    pinMode(_config.pinSensorSck, OUTPUT);
     _controllerState = STANDBY;
 }
 
 void HeatController::prepareSensor(){
     if(_controllerState == INVALID) return;
-    digitalWrite(_pinSensorCs, LOW);
+    digitalWrite(_config.pinSensorCs, LOW);
 }
 
 float HeatController::readSensor(){
@@ -167,10 +169,10 @@ float HeatController::readSensor(){
     //  14..2 = 0.25 degree counts MSB First
     //  2     = 1 if thermocouple is open circuit
     //  1..0  = uninteresting status
-    uint16_t tempBits = shiftIn(_pinSensorSo, _pinSensorSck, MSBFIRST);
+    uint16_t tempBits = shiftIn(_config.pinSensorSo, _config.pinSensorSck, MSBFIRST);
     tempBits <<= 8;
-    tempBits |= shiftIn(_pinSensorSo, _pinSensorSck, MSBFIRST);
-    digitalWrite(_pinSensorCs, HIGH);
+    tempBits |= shiftIn(_config.pinSensorSo, _config.pinSensorSck, MSBFIRST);
+    digitalWrite(_config.pinSensorCs, HIGH);
 
     // Bit 2 indicates if the thermocouple is disconnected
     if (tempBits & 0x4) return NAN;
