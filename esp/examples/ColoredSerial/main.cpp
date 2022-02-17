@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
 void setup () {
-Serial.begin(11520);
+Serial.begin(115200);
 Serial.println("\033[0;37;40m Normal text\n");
 Serial.println("\033[2;37;40m Underlined text\033[0;37;40m \n");
 Serial.println("\033[1;37;40m Bright Colour\033[0;37;40m \n");
