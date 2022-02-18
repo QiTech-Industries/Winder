@@ -13,7 +13,7 @@ class McValidator{
          * @return true pin exists
          * @return false pin does not exist
          */
-        virtual bool isDigitalPinValid(uint8_t pin);
+        bool isDigitalPinValid(uint8_t pin);
 
         /**
          * @brief Checks whether an analog pin is valid and exists
@@ -22,5 +22,5 @@ class McValidator{
          * @return true pin exists
          * @return false pin does not exist
          */
-        virtual bool isAnalogPinValid(uint8_t pin);
+        bool isAnalogPinValid(uint8_t pin);
 };

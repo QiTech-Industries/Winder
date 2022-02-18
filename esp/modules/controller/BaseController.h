@@ -1,9 +1,9 @@
 #pragma once
 #include <stdint.h>
 
-#include "logging.h"
-#include <McValidator.h>
-#include <McValidatorEsp32.h>
+#include "../logger/logging.h"
+#include "../validator/McValidator.h"
+#include "../validator/McValidatorEsp32.h"
 
 /**
  * @brief Abstract class for controlling active modules

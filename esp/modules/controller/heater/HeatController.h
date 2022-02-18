@@ -1,7 +1,7 @@
 #pragma once
-#include <logging.h>
+#include "../../logger/logging.h"
 
-#include <BaseController.h>
+#include "../BaseController.h"
 
 struct heaterControllerParameters_s {
     uint16_t id; // Controller id
@@ -34,7 +34,7 @@ class HeatController : BaseController{
         // States
         enum module_state_e {INVALID, STANDBY, ACTIVE};
         module_state_e _controllerState = INVALID;
-        boolean _heatingState; // State of heating module, true = active(hot), false = inactive
+        bool _heatingState; // State of heating module, true = active(hot), false = inactive
         uint64_t _timestampSensorPrepare; // millis()-timestamp since last preparation of temperature measurement
         uint64_t _timestampSensorRead; // millis()-timestamp since last temperature measurement
         uint64_t _timestampHeatingChange = 0; // millis()-timestamp of last change(activation / deactivation) of the heating module

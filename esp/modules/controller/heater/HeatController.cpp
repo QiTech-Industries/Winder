@@ -1,8 +1,11 @@
-#include <Arduino.h>
-#include <HeatController.h>
-#include <logging.h>
+#include "HeatController.h"
 
-#include <McValidator.h>
+#include <Arduino.h>
+
+#include "../../logger/logging.h"
+
+#include "../../validator/McValidator.h"
+
 /**
  * @brief Calculates the difference of two millis()-timestamps
  * 

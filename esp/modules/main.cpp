@@ -1,6 +1,7 @@
 #include <Arduino.h>
-#include <HeatController.h>
-#include <logging.h>
+
+#include "controller/heater/HeatController.h"
+#include "logger/logging.h"
 
 /**
  * Example code for using 3 heat-controllers simultaneously
