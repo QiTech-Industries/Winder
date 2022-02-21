@@ -2,17 +2,22 @@
 
 using TMC2130_n::DRV_STATUS_t;
 
-Stepper::Stepper(stepper_s config) {
+Stepper::Stepper() {}
+
+void Stepper::init(stepper_s config) {
     _config = config;
     _microstepsPerRotation = config.stepsPerRotation * config.microstepsPerStep;
     _driver = new TMC2130Stepper(config.pins.cs);
     _driver->begin();
+    _engine.init();
 
     // DRIVER config
+    _driver->toff(0);
     _driver->blank_time(5);
     _driver->rms_current(config.maxCurrent);
     _driver->microsteps(config.microstepsPerStep);
     _driver->sgt(_stallValue);
+    _driver->sfilt(true);
 
     // StallGuard/Coolstep config
     _driver->TCOOLTHRS(1000000);
@@ -29,8 +34,10 @@ Stepper::Stepper(stepper_s config) {
 bool Stepper::isMoving() { return _stepper->isRampGeneratorActive(); }
 
 void Stepper::printStatus() {
-    Serial.printf("%s - Speed: %.2frpm  Load: %u%%\n", _config.stepperId,
-                  _current.rpm, _current.load);
+    char mode[20];
+    modeToString(_currentRecipe.mode, mode);
+    Serial.printf("%s - Mode: %s Speed: %.2frpm  Load: %u%%\n",
+                  _config.stepperId, mode, _current.rpm, _current.load);
 }
 
 uint16_t Stepper::getCurrentStall() {
@@ -43,7 +50,7 @@ void Stepper::updateStatus() {
     _current.rpm =
         speedUsToRpm(_stepper->getCurrentSpeedInUs(), _microstepsPerRotation);
     _current.load =
-        stallToLoadPercent(_stepper->getCurrentSpeedInUs(), getCurrentStall(),
+        stallToLoadPercent(abs(_stepper->getCurrentSpeedInUs()), getCurrentStall(),
                            speeds, minLoad, maxLoad, 40);
     _current.position =
         positionToMm(_stepper->getCurrentPosition(), _microstepsPerRotation,
@@ -54,9 +61,10 @@ void Stepper::forceStop() {
     _stepper->forceStopAndNewPosition(_stepper->getCurrentPosition());
 }
 
-bool Stepper::needsHome(mode_e mode) {
-    if (mode == POSITIONING || mode == OSCILLATINGLEFT ||
-        mode == OSCILLATINGRIGHT) {
+bool Stepper::needsHome(mode_e targetMode, mode_e currentMode) {
+    if ((targetMode == POSITIONING || targetMode == OSCILLATINGLEFT ||
+         targetMode == OSCILLATINGRIGHT) &&
+        currentMode != HOMING) {
         return true;
     }
     return false;
@@ -68,17 +76,22 @@ bool Stepper::isRecipeFinished() {
         _currentRecipe.mode == OSCILLATINGRIGHT) {
         return !_stepper->isRampGeneratorActive();
     }
-    if (_currentRecipe.mode == HOMING) {
+    if (_currentRecipe.mode == HOMING && _startSpeedReached) {
         return _current.load == 100;
     }
     return false;
 }
 
 bool Stepper::switchCurrentRecipeMode() {
-    if (needsHome(_currentRecipe.mode)) {
+    if (_currentRecipe.mode == _targetRecipe.mode && !isRecipeFinished())
+        return false;
+    if (_currentRecipe.mode == HOMING && !isRecipeFinished()) return false;
+
+    if (needsHome(_targetRecipe.mode, _currentRecipe.mode)) {
         _currentRecipe = _defaultRecipe;
         _currentRecipe.mode = HOMING;
-        _currentRecipe.rpm = 1;
+        _currentRecipe.rpm = 40;
+        _startSpeedReached = false;
         return true;
     }
     if (isRecipeFinished() && _currentRecipe.mode == OSCILLATINGLEFT) {
@@ -90,15 +103,12 @@ bool Stepper::switchCurrentRecipeMode() {
         _targetRecipe.mode = STANDBY;
         return true;
     }
-    if (_currentRecipe.mode != _targetRecipe.mode) {
-        _currentRecipe = _targetRecipe;
-        return true;
-    }
-    return false;
+    _currentRecipe = _targetRecipe;
+    return true;
 }
 
 void Stepper::startRecipe() {
-    if (_currentRecipe.mode == OFF) {
+    if (_targetRecipe.mode == OFF) {
         _driver->toff(0);
         return;
     }
@@ -124,24 +134,30 @@ void Stepper::startRecipe() {
     }
 
     if (_currentRecipe.rpm < 0) {
-        _stepper->runBackward();
+        _stepper->runForward();
         return;
     }
     if (_currentRecipe.rpm > 0) {
-        _stepper->runForward();
+        _stepper->runBackward();
         return;
     }
 }
 
 void Stepper::tuneCurrentRecipe() {
-    if (_currentRecipe.load && _currentRecipe.load < _current.load) {
-        // slow down if load too high
-        _stepper->setSpeedInUs(_stepper->getSpeedInUs() * 1.1);
+    if (abs(_current.rpm) >= abs(_currentRecipe.rpm)) _startSpeedReached = true;
+    if (_currentRecipe.mode != ADJUSTING) return;
+    if (!_startSpeedReached) return;
+
+    if (_current.load < _currentRecipe.load) {
+        // load too low speed up
+        _stepper->setSpeedInUs(_stepper->getSpeedInUs() * 0.9);
+        _stepper->applySpeedAcceleration();
         return;
     }
-    if (_currentRecipe.load && _currentRecipe.load > _targetRecipe.load) {
-        // speed up oif load too low
-        _stepper->setSpeedInUs(_stepper->getSpeedInUs() * 0.9);
+    if (_current.load > _currentRecipe.load) {
+        // load too high slow down
+        _stepper->setSpeedInUs(_stepper->getSpeedInUs() * 1.5);
+        _stepper->applySpeedAcceleration();
         return;
     }
 }
@@ -173,12 +189,14 @@ void Stepper::adjustSpeedToLoad(float startSpeed, uint8_t desiredLoad) {
     _targetRecipe.mode = ADJUSTING;
     _targetRecipe.rpm = startSpeed;
     _targetRecipe.load = desiredLoad;
+    _startSpeedReached = false;
 }
 
 void Stepper::home(float rpm) {
     _targetRecipe = _defaultRecipe;
     _targetRecipe.mode = HOMING;
     _targetRecipe.rpm = rpm;
+    _startSpeedReached = false;
 }
 
 void Stepper::standby() {
@@ -197,5 +215,5 @@ void Stepper::loop() {
         tuneCurrentRecipe();
 
     updateStatus();
-    //printStatus();
+    printStatus();
 }

@@ -1,5 +1,4 @@
-#ifndef HELPERS_H
-#define HELPERS_H
+#pragma once
 
 #include <stdint.h>
 
@@ -25,7 +24,7 @@ enum mode_e {
     POSITIONING,
     OSCILLATINGLEFT,
     OSCILLATINGRIGHT,
-    POWER,
+    STANDBY,
     OFF
 };
 
@@ -55,7 +54,7 @@ void modeToString(const mode_e mode, char *out);
 uint16_t putNumberInRange(const uint16_t number, const uint16_t lower,
                           const uint16_t upper);
 
-float speedUsToRpm(const uint32_t speedUs, const uint32_t stepsPerRotation);
+float speedUsToRpm(const int32_t speedUs, const uint32_t stepsPerRotation);
 
 uint32_t speedRpmToUs(float rpm, const uint32_t stepsPerRotation);
 
@@ -68,5 +67,3 @@ float positionToMm(int32_t position, const uint32_t stepsPerRotation,
 
 int32_t mmToPosition(float mm, const uint32_t stepsPerRotation,
                      const float mmPerRotation);
-
-#endif

@@ -1,4 +1,4 @@
-#include <helpers.h>
+#include <StepperTest.h>
 #include <stdint.h>
 #include <string.h>
 #include <math.h>
@@ -32,7 +32,7 @@ uint16_t indexOfClosestNumberInSortedArray(const uint16_t number,
 void modeToString(const mode_e mode, char *out) {
     const char *states[8] = {
         "ROTATING",        "ADJUSTING",        "HOMING", "POSITIONING",
-        "OSCILLATINGLEFT", "OSCILLATINGRIGHT", "POWER",  "OFF"};
+        "OSCILLATINGLEFT", "OSCILLATINGRIGHT", "STANDBY",  "OFF"};
     strcpy(out, states[mode]);
 }
 
@@ -43,7 +43,7 @@ uint16_t putNumberInRange(const uint16_t number, const uint16_t lower,
     return number;
 }
 
-float speedUsToRpm(const uint32_t speedUs, const uint32_t stepsPerRotation) {
+float speedUsToRpm(const int32_t speedUs, const uint32_t stepsPerRotation) {
     // 1 minute has 60 million microseconds
     // .0 for percise float calculation
     if (speedUs == 0 || stepsPerRotation == 0) return 0;

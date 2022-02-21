@@ -1,9 +1,8 @@
-#ifndef STEPPER_H
-#define STEPPER_H
+#pragma once
 
 #include <FastAccelStepper.h>
 #include <TMCStepper.h>
-#include <helpers.h>
+#include <StepperTest.h>
 
 using TMC2130_n::DRV_STATUS_t;
 
@@ -31,17 +30,18 @@ class Stepper {
     const uint16_t _acceleration = 1000;
 
     bool _homed = false;
+    bool _startSpeedReached = false;
     uint16_t _debugInterval = 0;
     uint32_t _microstepsPerRotation;
     stepper_s _config;
-    recipe_s _targetRecipe;
-    recipe_s _currentRecipe;
     status_s _current;
     const recipe_s _defaultRecipe = {.mode = OFF,
                                      .rpm = 0,   // Rotations per minute
                                      .load = 0,  // Stepper load in %
                                      .position1 = 0,
                                      .position2 = 0};
+    recipe_s _currentRecipe = _defaultRecipe;
+    recipe_s _targetRecipe = _defaultRecipe;
 
     bool isMoving();
 
@@ -53,7 +53,7 @@ class Stepper {
 
     void forceStop();
 
-    bool needsHome(mode_e mode);
+    bool needsHome(mode_e targetMode, mode_e currentMode);
 
     bool isRecipeFinished();
 
@@ -64,10 +64,12 @@ class Stepper {
     void tuneCurrentRecipe();
 
    public:
-    Stepper(stepper_s config);
+    Stepper();
 
     // Synchronous methods
     void oscillate(float rpm, int32_t leftPos, int32_t rightPos);
+
+    void init(stepper_s config);
 
     void position(float rpm, int32_t position);
 
@@ -85,5 +87,3 @@ class Stepper {
 
     void loop();
 };
-
-#endif

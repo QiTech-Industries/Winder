@@ -6,16 +6,20 @@ stepper_s spoolConfig = {.stepperId = "spool",
                          .stepsPerRotation = 200,
                          .mmPerRotation = 10,
                          .pins = {
-                             .en = 12,
-                             .dir = 16,
-                             .step = 26,
-                             .cs = 5,
+                        .en = 12,
+                        .dir = 27,
+                        .step = 25,
+                        .cs = 2,
                          }};
 
-Stepper spool(spoolConfig);
+Stepper spool;
 
 void setup() {
+    SPI.begin();
     Serial.begin(115200);
-    spool.rotate(5);
+    spool.init(spoolConfig);
+    spool.position(-40, 60);
 }
-void loop() { spool.loop(); }
+void loop() {
+    spool.loop();
+}
