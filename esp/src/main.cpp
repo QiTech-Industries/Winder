@@ -1,5 +1,9 @@
 #include "Winder.h"
 
+//#include <Arduino.h>
+
+Winder JarvisWinder;
+
 void setup()
 {
     Serial.begin(115200);
@@ -7,7 +11,6 @@ void setup()
         .hard = {
             .motors = {
                 .puller = {
-
                     .max_current = 700,
                     .microsteps = 16,
                     .gear_ratio = 1,
@@ -52,13 +55,14 @@ void setup()
             }},
         .soft = {
             .wifi = {
-                "QiTech",
-                "Malte100%",
-                "Jarvis Winder",
-                "",
-                "Jarvis Winder",
-                "winder",
-                true,
+                // TODO: fix struct-initialisation
+                "QiTech", // .ssid = 
+                "Malte100%", // .password = 
+                "Jarvis Winder", // .ap_ssid = 
+                "", // .ap_password = 
+                "Jarvis Winder", // .friendly_name = 
+                "winder", // .mdns_name = 
+                true, // .ap_enabled = 
             },
             .software = {
                 .spiffs = {"0.0.1", "1209211146"},

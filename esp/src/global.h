@@ -1,5 +1,6 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
+// TODO: Only used in examples/ -> remove?
 
 // only print to Serial if DEBUG_WINDER flag is defined
 #ifdef DEBUG_WINDER
@@ -35,17 +36,8 @@
 #endif
 
 // DESIGN GUIDE
-// Alle Funktionen, die im Setup aufgerufen werden müssen, weil sie sonst einen Fehler zurückgeben, werden init() genannt
-// Structuren werden in PascalCase benannt, ihre Deklerationen in camelCase
-// zum befüllen der Strukturen werden aggregate initializer verwendet, außer es handelt sich um char bei denen dies nicht funktioniert
-// Alle includes werden in global.h gelistet
-// defines werden aufgrund ihrer unberechenbarkeit in keiner .cpp datei verwendet
-// Alle Klassen müssen ohne Parameter initialisierbar sein
 // Alle Werte die surch den Nutzer verändert werden können, befinden sich in Config::soft, die restlichen in Config::hard
-// Alle Member eines structs werden in snake_case geschrieben (Ausnahme: die Blynk Struktur)
 // mDNS does not work on Android!
-// why do we store configuration in JSON and not struct directly?
+// Why do we store configuration in JSON and not struct directly?
 // - JSON stores values and! keys, allows changing struct on update while still beeing able to read old config
 // - JSON is human readable
-// *_s is used for structs *_t is used for types as suffix
-// guard statements (if with return) should be prefered over if...else
