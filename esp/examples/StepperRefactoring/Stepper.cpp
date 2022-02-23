@@ -206,9 +206,7 @@ void Stepper::standby() {
 
 void Stepper::off() { _targetRecipe = _defaultRecipe; }
 
-void Stepper::debug(uint16_t interval) { _debugInterval = interval; }
-
-void Stepper::loop() {
+void Stepper::handle() {
     if (switchCurrentRecipeMode())
         startRecipe();
     else

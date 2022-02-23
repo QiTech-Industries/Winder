@@ -18,8 +18,8 @@ void setup() {
     SPI.begin();
     Serial.begin(115200);
     spool.init(spoolConfig);
-    spool.position(-40, 60);
+    spool.adjustSpeedToLoad(40, 60);
 }
 void loop() {
-    spool.loop();
+    spool.handle();
 }
