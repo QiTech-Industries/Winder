@@ -16,7 +16,7 @@ void Stepper::init(stepper_s config) {
     _driver->blank_time(5);
     _driver->rms_current(config.maxCurrent);
     _driver->microsteps(config.microstepsPerStep);
-    _driver->sgt(_stallValue);
+    _driver->sgt(DRIVER_STALL_VALUE);
     _driver->sfilt(true);
 
     // StallGuard/Coolstep config
@@ -28,16 +28,30 @@ void Stepper::init(stepper_s config) {
     _stepper = _engine.stepperConnectToPin(config.pins.step);
     _stepper->setDirectionPin(config.pins.dir);
     _stepper->setEnablePin(config.pins.en);
-    _stepper->setAcceleration(_acceleration);
+    _stepper->setAcceleration(DEFAULT_ACCELERATION);
 }
 
 bool Stepper::isMoving() { return _stepper->isRampGeneratorActive(); }
 
-void Stepper::printStatus() {
-    char mode[20];
-    modeToString(_currentRecipe.mode, mode);
-    Serial.printf("%s - Mode: %s Speed: %.2frpm  Load: %u%%\n",
-                  _config.stepperId, mode, _current.rpm, _current.load);
+void Stepper::printStatus(bool verbous = false) {
+    // Resolve name of recipe-modes
+    char modeCurrent[20];
+    modeToString(_currentRecipe.mode, modeCurrent);
+    char modeTarget[20];
+    modeToString(_targetRecipe.mode, modeTarget);
+
+    // Print info
+    Serial.printf("{time: %lu, summary: {id: '%s', mode: '%s', rpm: %.2f, load: %u%%, pos: %d, homed: %d}",
+        millis(), _config.stepperId, modeCurrent, _stepperStatus.rpm, _stepperStatus.load, _stepperStatus.position, _homed);
+    if(verbous){
+        Serial.printf(", errors: 'TODO'"); // TODO: Implement
+        Serial.printf(", recipeNow: {mode: '%s', rpm: %.2f, load: %d, pos1: %zu, pos2: %zu}",
+            modeCurrent, _currentRecipe.rpm, _currentRecipe.load, _currentRecipe.position1, _currentRecipe.position2);
+        Serial.printf(", recipeTarget: {mode: '%s', rpm: %.2f, load: %d, pos1: %zu, pos2: %zu}",
+            modeTarget, _targetRecipe.rpm, _targetRecipe.load, _targetRecipe.position1, _targetRecipe.position2);
+    }
+    Serial.println("}");
+
 }
 
 uint16_t Stepper::getCurrentStall() {
@@ -46,13 +60,17 @@ uint16_t Stepper::getCurrentStall() {
     return drvStatus.sg_result;
 }
 
+void Stepper::setDebugging(bool debugging){
+    _debugging = debugging;
+}
+
 void Stepper::updateStatus() {
-    _current.rpm =
+    _stepperStatus.rpm =
         speedUsToRpm(_stepper->getCurrentSpeedInUs(), _microstepsPerRotation);
-    _current.load =
+    _stepperStatus.load =
         stallToLoadPercent(abs(_stepper->getCurrentSpeedInUs()), getCurrentStall(),
                            speeds, minLoad, maxLoad, 40);
-    _current.position =
+    _stepperStatus.position =
         positionToMm(_stepper->getCurrentPosition(), _microstepsPerRotation,
                      _config.mmPerRotation);
 }
@@ -61,13 +79,18 @@ void Stepper::forceStop() {
     _stepper->forceStopAndNewPosition(_stepper->getCurrentPosition());
 }
 
-bool Stepper::needsHome(mode_e targetMode, mode_e currentMode) {
-    if ((targetMode == POSITIONING || targetMode == OSCILLATINGLEFT ||
-         targetMode == OSCILLATINGRIGHT) &&
-        currentMode != HOMING) {
-        return true;
-    }
-    return false;
+bool Stepper::checkNeedsHome(mode_e targetMode, mode_e currentMode) {
+    if(_homed) return false;
+    if(currentMode == HOMING) return false;
+
+    switch(targetMode){
+        case POSITIONING:
+        case OSCILLATINGLEFT:
+        case OSCILLATINGRIGHT:
+            return true;
+        default:
+            return false;
+    };
 }
 
 bool Stepper::isRecipeFinished() {
@@ -76,85 +99,83 @@ bool Stepper::isRecipeFinished() {
         _currentRecipe.mode == OSCILLATINGRIGHT) {
         return !_stepper->isRampGeneratorActive();
     }
-    if (_currentRecipe.mode == HOMING && _startSpeedReached) {
-        return _current.load == 100;
+    if (_currentRecipe.mode == HOMING && isStartSpeedReached()) {
+        return _stepperStatus.load == 100;
     }
     return false;
 }
 
-bool Stepper::switchCurrentRecipeMode() {
-    if (_currentRecipe.mode == _targetRecipe.mode && !isRecipeFinished())
-        return false;
-    if (_currentRecipe.mode == HOMING && !isRecipeFinished()) return false;
+void Stepper::applySpeed(float speedRpm){
+    _driver->toff(1);
+    forceStop();
+    if(speedRpm != 0) {
+        _stepper->setSpeedInUs(
+        speedRpmToUs(speedRpm, _microstepsPerRotation));
+        _stepper->applySpeedAcceleration();
 
-    if (needsHome(_targetRecipe.mode, _currentRecipe.mode)) {
-        _currentRecipe = _defaultRecipe;
-        _currentRecipe.mode = HOMING;
-        _currentRecipe.rpm = 40;
-        _startSpeedReached = false;
-        return true;
+        if(speedRpm < 0){
+            _stepper->runForward();
+        } else {
+            _stepper->runBackward();
+        }
     }
-    if (isRecipeFinished() && _currentRecipe.mode == OSCILLATINGLEFT) {
-        _currentRecipe.mode = OSCILLATINGRIGHT;
-        return true;
-    }
-    if (isRecipeFinished() && _currentRecipe.mode == _targetRecipe.mode) {
-        _targetRecipe = _defaultRecipe;
-        _targetRecipe.mode = STANDBY;
-        return true;
-    }
-    _currentRecipe = _targetRecipe;
-    return true;
 }
 
-void Stepper::startRecipe() {
-    if (_targetRecipe.mode == OFF) {
+void Stepper::startRecipe(recipe_s recipe) {
+    if (recipe.mode == OFF) {
         _driver->toff(0);
         return;
     }
 
-    _driver->toff(1);
-    forceStop();
-    _stepper->setSpeedInUs(
-        speedRpmToUs(_currentRecipe.rpm, _microstepsPerRotation));
-    _stepper->applySpeedAcceleration();
+    // Set new speed
+    applySpeed(recipe.rpm);
 
-    if (_currentRecipe.mode == POSITIONING ||
-        _currentRecipe.mode == OSCILLATINGLEFT) {
-        _stepper->moveTo(mmToPosition(_currentRecipe.position1,
-                                      _microstepsPerRotation,
-                                      _config.mmPerRotation));
-        return;
-    }
-    if (_currentRecipe.mode == OSCILLATINGRIGHT) {
-        _stepper->moveTo(mmToPosition(_currentRecipe.position2,
-                                      _microstepsPerRotation,
-                                      _config.mmPerRotation));
-        return;
-    }
-
-    if (_currentRecipe.rpm < 0) {
-        _stepper->runForward();
-        return;
-    }
-    if (_currentRecipe.rpm > 0) {
-        _stepper->runBackward();
-        return;
+    // Do mode specific stuff
+    switch(recipe.mode){
+        case ROTATING:
+        case ADJUSTING:
+        case HOMING:
+            applySpeed(recipe.rpm);
+            break;
+        case POSITIONING:
+        case OSCILLATINGLEFT:
+            applySpeed(recipe.rpm);
+            _stepper->moveTo(mmToPosition(recipe.position1,
+                _microstepsPerRotation,
+                _config.mmPerRotation)
+            );
+            break;
+        case OSCILLATINGRIGHT:
+            applySpeed(recipe.rpm);
+            _stepper->moveTo(mmToPosition(recipe.position2,
+                _microstepsPerRotation,
+                _config.mmPerRotation)
+            );
+            break;
+        case OFF:
+            applySpeed(0); // Stop any movement
+            _driver->toff(0); // power off the driver
+            break;
+        case STANDBY:
+            applySpeed(0); // Stop any movement
+            break;
     }
 }
 
-void Stepper::tuneCurrentRecipe() {
-    if (abs(_current.rpm) >= abs(_currentRecipe.rpm)) _startSpeedReached = true;
-    if (_currentRecipe.mode != ADJUSTING) return;
-    if (!_startSpeedReached) return;
+bool Stepper::isStartSpeedReached(){
+    return abs(_stepperStatus.rpm) >= abs(_currentRecipe.rpm);
+}
 
-    if (_current.load < _currentRecipe.load) {
+void Stepper::adjustSpeedByLoad() {
+    if (!isStartSpeedReached()) return; // Invalid load-measurements for low speeds
+
+    if (_stepperStatus.load < _currentRecipe.load) {
         // load too low speed up
         _stepper->setSpeedInUs(_stepper->getSpeedInUs() * 0.9);
         _stepper->applySpeedAcceleration();
         return;
     }
-    if (_current.load > _currentRecipe.load) {
+    if (_stepperStatus.load > _currentRecipe.load) {
         // load too high slow down
         _stepper->setSpeedInUs(_stepper->getSpeedInUs() * 1.5);
         _stepper->applySpeedAcceleration();
@@ -163,55 +184,111 @@ void Stepper::tuneCurrentRecipe() {
 }
 
 // Synchronous methods
-void Stepper::oscillate(float rpm, int32_t leftPos, int32_t rightPos) {
+void Stepper::moveOscillate(float rpm, int32_t leftPos, int32_t rightPos, bool directionLeft) {
     _targetRecipe = _defaultRecipe;
-    _targetRecipe.mode = OSCILLATINGLEFT;
+    _targetRecipe.mode = directionLeft ? OSCILLATINGLEFT : OSCILLATINGRIGHT;
     _targetRecipe.rpm = rpm;
     _targetRecipe.position1 = leftPos;
     _targetRecipe.position2 = rightPos;
+    _newCommand = true;
 }
 
-void Stepper::position(float rpm, int32_t position) {
+void Stepper::movePosition(float rpm, int32_t position) {
     _targetRecipe = _defaultRecipe;
     _targetRecipe.mode = POSITIONING;
     _targetRecipe.rpm = rpm;
     _targetRecipe.position1 = position;
+    _newCommand = true;
 }
 
-void Stepper::rotate(float rpm) {
+void Stepper::moveRotate(float rpm) {
     _targetRecipe = _defaultRecipe;
     _targetRecipe.mode = ROTATING;
     _targetRecipe.rpm = rpm;
+    _newCommand = true;
 }
 
-void Stepper::adjustSpeedToLoad(float startSpeed, uint8_t desiredLoad) {
+void Stepper::moveRotateWithLoadAdjust(float startSpeed, uint8_t desiredLoad) {
     _targetRecipe = _defaultRecipe;
     _targetRecipe.mode = ADJUSTING;
     _targetRecipe.rpm = startSpeed;
     _targetRecipe.load = desiredLoad;
-    _startSpeedReached = false;
+    _newCommand = true;
 }
 
-void Stepper::home(float rpm) {
+void Stepper::moveHome(float rpm) {
     _targetRecipe = _defaultRecipe;
     _targetRecipe.mode = HOMING;
     _targetRecipe.rpm = rpm;
-    _startSpeedReached = false;
+    _newCommand = true;
 }
 
-void Stepper::standby() {
+void Stepper::switchModeStandby() {
     _targetRecipe = _defaultRecipe;
     _targetRecipe.mode = STANDBY;
+    _newCommand = true;
 }
 
-void Stepper::off() { _targetRecipe = _defaultRecipe; }
+void Stepper::switchModeOff() {
+    _targetRecipe = _defaultRecipe;
+    _targetRecipe.mode = OFF;
+    _newCommand = true;
+}
 
 void Stepper::handle() {
-    if (switchCurrentRecipeMode())
-        startRecipe();
-    else
-        tuneCurrentRecipe();
+    // Switch recipe on new command, unless we are still homing. OFF has priority for safety reasons though
+    if(_newCommand && (_targetRecipe.mode == OFF || _currentRecipe.mode != HOMING)){
+        // Determine next command
+        if(checkNeedsHome(_targetRecipe.mode, _currentRecipe.mode)){
+            // Initiate homing instead of next command
+            _currentRecipe = _defaultRecipe;
+            _currentRecipe.mode = HOMING;
+            _currentRecipe.rpm = HOMING_SPEED_RPM;
+            _newCommand = true;
+        } else {
+            _currentRecipe = _targetRecipe;
+            _targetRecipe = _defaultRecipe;
+            _newCommand = false;
+        }
+        
+        startRecipe(_currentRecipe);
+    }
 
+    // Handle the current recipe, that was already started at some point in the past
+    switch(_currentRecipe.mode){
+        case HOMING:
+            // Wait for stopper to be hit to set home
+            if (isStartSpeedReached() && _stepperStatus.load == 100) {
+                _stepper->forceStopAndNewPosition(0);
+                _homed = true;
+                _currentRecipe.mode = STANDBY;
+                _newCommand = true; // Return to whatever we were doing on the next cycle
+            }
+            break;
+        case ADJUSTING:
+            adjustSpeedByLoad();
+            break;
+        case POSITIONING:
+            // Wait for motor to stop moving, as it means we reached our destination
+            if(!_stepper->isRampGeneratorActive()){
+                switchModeStandby();
+            }
+            break;
+        case OSCILLATINGLEFT:
+        case OSCILLATINGRIGHT:
+            // Invert direction when we have reached our destination
+            if(!_stepper->isRampGeneratorActive()){
+                moveOscillate(_currentRecipe.rpm, _currentRecipe.position1, _currentRecipe.position2, (_currentRecipe.mode != OSCILLATINGLEFT));
+            }
+            break;
+        case ROTATING: // Keep on rolling, nothing to do here
+        case STANDBY:  // Nothing to do here, too
+        case OFF:  // Literally nothing to do here
+        default: // Should never happen
+            break;
+    };
+
+    // Stats and logging
     updateStatus();
-    printStatus();
+    if(_debugging) printStatus();
 }

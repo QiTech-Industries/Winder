@@ -11,46 +11,52 @@ using TMC2130_n::DRV_STATUS_t;
  *
  */
 struct recipe_s {
-    mode_e mode;        // stepper operation mode
-    float rpm;          // Steper Rotations per minute
-    uint8_t load;       // Stepper load in %
-    int32_t position1;  // Left end postion
+    mode_e mode;        // Operation mode
+    float rpm;          // Speed in rotations per minute
+    uint8_t load;       // Motorload in %, 0 = no load, 100 = full load
+    int32_t position1;  // Left end position
     int32_t position2;  // Right end position
 };
 
 /**
- * @brief current stepper status
+ * @brief Status of stepper
  *
  */
 struct status_s {
     float rpm;         // Steper Rotations per minute
-    uint8_t load;      // Stepper load in %
+    uint8_t load;      // Stepper load in %, 0 = no load, 100 = full load
     int32_t position;  // stepper position
 };
 
 // TODO: Inherit from BaseController
 class Stepper {
    private:
+    // Drivers
     TMC2130Stepper *_driver;
     FastAccelStepperEngine _engine = FastAccelStepperEngine();
     FastAccelStepper *_stepper = NULL;
 
-    // TODO: change constants to uppercase
-    const uint8_t _stallValue =
-        8;  // stall config needed for intialization of TMCStepper
+    // Hardcoded configuration
+    const uint8_t DRIVER_STALL_VALUE = 8;  // stall config needed for intialization of TMCStepper
     // TODO: make acceleration configurable
-    const uint16_t _acceleration = 1000;  // default sepper acceleration
+    const uint16_t DEFAULT_ACCELERATION = 1000;  // default stepper acceleration
+    const float HOMING_SPEED_RPM = 40; // Speed for homing in rotations per minute
 
-    bool _homed = false;              // is stepper homed flag
-    bool _startSpeedReached = false;  // start speed for load detection
-    uint32_t _microstepsPerRotation;  // count of step signal to be sent for one
-                                      // rotation
-    stepper_s _config;                // stepper hard config
-    status_s _current;                // average motor operating current
+    // Soft configuration
+    bool _debugging = false; // Flag whether to print debugging information
+    stepper_s _config; // Stepper configuration
+    uint32_t _microstepsPerRotation; // Count of step signals to be sent for one rotation
+
+    // Status
+    bool _homed = false; // Flag whether the driver of the stepper has been homed yet
+    status_s _stepperStatus; // Current status of stepper
+    
+    // Recipes aka commands aka operation modes
     const recipe_s _defaultRecipe = {
         .mode = OFF, .rpm = 0, .load = 0, .position1 = 0, .position2 = 0};
     recipe_s _currentRecipe = _defaultRecipe;  // current operation mode
     recipe_s _targetRecipe = _defaultRecipe;   // target operation mode
+    bool _newCommand = false; // Flag whether a new command is waiting in _targetRecipe
 
     /**
      * @brief Check if stepper is moving or rotating
@@ -61,12 +67,20 @@ class Stepper {
     bool isMoving();
 
     /**
-     * @brief Check wether end condition of recipe is met
+     * @brief Check whether end condition of recipe is met
      *
      * @return true Stepper Homed/Positioned/at left or right stop
      * @return false Stepper still moving or in standby/off
      */
     bool isRecipeFinished();
+
+    /**
+     * @brief Checks whether defined starting speed has been reached
+     * 
+     * @return true speed reached
+     * @return false speed not reached
+     */
+    bool isStartSpeedReached();
 
     /**
      * @brief Check wether target mode needs homing
@@ -75,9 +89,9 @@ class Stepper {
      * @param currentMode current mode of operation
      * @return true targetMode needs position accuracy but stepper is not homed
      * yet
-     * @return false mode does not require accuracy or
+     * @return false mode does not require accuracy or already homed
      */
-    bool needsHome(mode_e targetMode, mode_e currentMode);
+    bool checkNeedsHome(mode_e targetMode, mode_e currentMode);
 
     /**
      * @brief Extract current stall from DRV_STATUS_t struct
@@ -93,39 +107,30 @@ class Stepper {
     void updateStatus();
 
     /**
-     * @brief Switches the current recipe based on transition conditions e.g.
-     * HOME->POSITION, POSITION->STANDBY
-     *
-     * @return true Mode has switched
-     * @return false Mode stays constant
+     * @brief Make the motor run at a defined speed
+     * 
+     * @param speedRpm speed in rotations per minute. If 0 the motor will be powered but not moving. Positive / negative values determine the direction
      */
-    // TODO: fix conditions for mode switching
-    bool switchCurrentRecipeMode();
+    void applySpeed(float speedRpm);
 
     /**
-     * @brief Execute current recipe according to parameters set in
-     * _currentRecipe
+     * @brief Start executing a recipe
      *
+     * @param recipe recipe to be executed
      */
-    void startRecipe();
+    void startRecipe(recipe_s recipe);
 
     /**
-     * @brief Stop the stepper immediatly but keep position (emergency stop)
+     * @brief Stop the stepper immediatly but remember position (emergency stop)
      *
      */
     void forceStop();
 
     /**
-     * @brief Update recipe according to current load or speed
+     * @brief Update the motor speed according to the current load
      *
      */
-    void tuneCurrentRecipe();
-
-    /**
-     * @brief Log StepperID, Mode, Speed, Load to Serial
-     *
-     */
-    void printStatus();
+    void adjustSpeedByLoad();
 
    public:
     Stepper();
@@ -142,21 +147,21 @@ class Stepper {
      * @brief Disable motor drivers, sets stepper in free-spin
      *
      */
-    void off();
+    void switchModeOff();
 
     /**
-     * @brief Feed current to stepper without moving it
+     * @brief Keeps the motor powered while eactivating any current movement commands
      *
      */
-    void standby();
+    void switchModeStandby();
 
     /**
-     * @brief Rotate stepper forever with set rpm
-     *
+     * @brief Start rotating stepper forever with constant speed
+     * 
      * @param rpm target stepper speed in rotationsPerMinute
      * negative values change direction
      */
-    void rotate(float rpm);
+    void moveRotate(float rpm);
 
     /**
      * @brief Rotate stepper while keeping measured load at setpoint
@@ -164,40 +169,49 @@ class Stepper {
      * @param startSpeed Speed at which load detection reliably works
      * @param desiredLoad Target load in %
      */
-    void adjustSpeedToLoad(float startSpeed, uint8_t desiredLoad);
+    void moveRotateWithLoadAdjust(float startSpeed, uint8_t desiredLoad);
 
     /**
-     * @brief Move stepper with rpm until load reaches 100%
+     * @brief Start moving stepper with rpm until load reaches 100%
      *
      * @param rpm target stepper speed in rotationsPerMinute
      * negative values change direction
      */
-    void home(float rpm);
+    void moveHome(float rpm);
 
     /**
-     * @brief Move stepper to target position
+     * @brief Start moving stepper to target position
      *
      * @param rpm movement speed in rotations per minute
      * @param position target postion in mm absolut
      */
-    void position(float rpm, int32_t position);
+    void movePosition(float rpm, int32_t position);
 
     /**
-     * @brief Move Stepper between two positions
+     * @brief Start moving stepper between two positions
      *
      * @param rpm target stepper speed in rotationsPerMinute negative values
      * change direction
      * @param leftPos left end position
      * @param rightPos right end position
+     * @param directionLeft true = start by moving left, false = start by moving right
      */
-    void oscillate(float rpm, int32_t leftPos, int32_t rightPos);
+    void moveOscillate(float rpm, int32_t leftPos, int32_t rightPos, bool directionLeft=true);
 
     /**
-     * @brief Called from loop(), handles calls to time dependend stepper
-     * methods
+     * @brief Manages states and transitions, repeatedly called
      *
      */
-
-    // TODO: add debugging method
     void handle();
+
+    /**
+     * @brief Print anoverview of stepper-related status details, used for debugging
+     * TODO: Remove eventually since debug-related?
+     *
+     * @param verbous true=all details, false=short details
+     */
+    void printStatus(bool verbous);
+
+    // Setter-method
+    void setDebugging(bool debugging);
 };

@@ -72,8 +72,8 @@ uint16_t indexOfClosestNumberInSortedArray(const uint16_t number,
 /**
  * @brief convert mode_e in in char representation
  *
- * @param mode // stepper operation mode
- * @param out // memory location to write the output to
+ * @param mode stepper operation mode
+ * @param out memory location to write the output to
  */
 void modeToString(const mode_e mode, char *out);
 
@@ -98,24 +98,24 @@ uint16_t putNumberInRange(const uint16_t number, const uint16_t lower,
 float speedUsToRpm(const int32_t speedUs, const uint32_t stepsPerRotation);
 
 /**
- * @brief Convert rotations per minute in Us between two steps
+ * @brief Convert rotations per minute in Us(microseconds) between two steps
  *
  * @param rpm rotations per minute
  * @param stepsPerRotation step count needed for full rotation
- * @return uint32_t time Us between two steps
+ * @return uint32_t time between two steps in Us(microseconds)
  */
 uint32_t speedRpmToUs(float rpm, const uint32_t stepsPerRotation);
 
 /**
  * @brief Convert raw stall to load in %
  *
- * @param speedUs time Us between two steps
+ * @param speedUs time between two steps in Us(microseconds)
  * @param stall raw stall value frm stepper driver 0...1023
  * @param speeds sorted speed lookup table wit Us values
  * @param minLoad lookup table with sorted stall values when no load applied
  * @param maxLoad lookup table with sorted stall values when max load applied
  * @param length length of all lookup tables (calibration point count)
- * @return uint8_t stepper load in %
+ * @return uint8_t stepper load in %, 0 = no load, 100 = full load
  */
 uint8_t stallToLoadPercent(const uint16_t speedUs, const uint16_t stall,
                            const uint16_t *speeds, const uint16_t *minLoad,
