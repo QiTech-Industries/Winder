@@ -203,12 +203,10 @@ void QiMachineWinder::init(configurationMachineWinder_s conf){
 
     // Connect to Wifi and create AP
     if (strlen(_configurationSoft.wifi.ssid)) {
-        Serial.println("Connect to Wifi"); // TODO: Debug/Logging
         _wifi.connect(_configurationSoft.wifi.ssid, _configurationSoft.wifi.password);
     }
     if (_configurationSoft.wifi.ap_enabled || !strlen(_configurationSoft.wifi.ssid))
     {
-        Serial.println("Create Wifi-AP"); // TODO: Debug/Logging
         _wifi.createAP(_configurationSoft.wifi.ap_ssid, _configurationSoft.wifi.ap_password);
         _server.createCaptive(WiFi.softAPIP());
     }

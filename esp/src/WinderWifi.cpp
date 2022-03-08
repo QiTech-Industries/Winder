@@ -46,14 +46,14 @@ void WinderWifi::connect(const char *ssid, const char *password) {
     WiFi.begin(ssid, password);
 
     DEBUG_PRINTLN(String("[Wifi] MAC Address: ") + WiFi.macAddress());
-    DEBUG_PRINTF("[Wifi] Connecting to WIFI: %s\n", ssid);
+    DEBUG_PRINTF("[Wifi] Connecting to: %s\n", ssid);
 
     changeMode(CONNECTING);
 };
 
 void WinderWifi::createAP(const char* ssid, const char* password) {
     WiFi.softAP(ssid, password);
-    DEBUG_PRINTLN(String("[Wifi] Access Point IP: ") + WiFi.softAPIP().toString());
+    DEBUG_PRINTLN(String("[Wifi] Created Access Point: ") + WiFi.softAPIP().toString());
 };
 
 String WinderWifi::scan() {
@@ -84,11 +84,12 @@ String WinderWifi::scan() {
 void WinderWifi::handle() {
     if (_connectionMode != ONLINE && WiFi.isConnected()) {
         // Save Wifi Credentials on connection
-        DEBUG_PRINTLN("[Wifi] Wifi successfully connected");
+        DEBUG_PRINT("[Wifi] Wifi successfully connected as ");
+        Serial.println(WiFi.localIP());
 
         strcpy(getConfiguration().ssid, _ssid);
         strcpy(getConfiguration().password, _password);
-
+        
         _currentTimeout = 0;
 
         changeMode(ONLINE);
