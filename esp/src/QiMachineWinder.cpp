@@ -76,9 +76,9 @@ void QiMachineWinder::init(configurationMachineWinder_s conf){
     if (!_configurationSoft.load()) {
         // Failed to load configuration, return to specified values
         _configurationSoft = conf.soft;
-        Serial.print("[Store] Loaded config: ");
-        Serial.println(_configurationSoft.asJSON());
     }
+    Serial.print("[Store] Using config: ");
+    Serial.println(_configurationSoft.asJSON());
 
     // Create HTTP server and websocket
     _server.create(_configurationHard.server.port, _configurationHard.server.default_path, _configurationSoft.wifi.mdns_name, _configurationSoft.wifi.friendly_name);
@@ -367,7 +367,6 @@ void QiMachineWinder::adjustOscillationPositions(uint16_t positionStart, uint16_
 }
 
 void QiMachineWinder::handleStatusReport() {
-    _stepperFerrari->printStatus(true); // TODO - debug
     if (_wifi.getConnectionMode() == CONNECTING) return;
 
     stepperStatus_s spoolStatus = _stepperSpool->getStatus();
@@ -426,6 +425,7 @@ float QiMachineWinder::calculateSpoolToFerrariSpeedRation(){
 void QiMachineWinder::handleSpeedAdjust(){
     if(_stepperFerrari->getCurrentMode() == OSCILLATING_FORWARD || _stepperFerrari->getCurrentMode() == OSCILLATING_BACKWARD){
         float speedNewRpm = _stepperSpool->getStatus().rpm / calculateSpoolToFerrariSpeedRation();
+        /*
         float speedNewMpm = speedRpmToMpm(speedNewRpm, _configurationHard.motors.ferrari.mmPerRotation);
         logPrint(INFO, INFO, "QiMachineWinder::handleSpeedAdjust spoolRpm: %.2f, ratio: %.2f, ferrariRpm: %.2f, newRpm: %.2f, newMpm: %.2f\n",
             _stepperSpool->getStatus().rpm,
@@ -434,6 +434,7 @@ void QiMachineWinder::handleSpeedAdjust(){
             speedNewRpm,
             speedNewMpm
         ); // TODO: DEBUG
+        */
         _stepperFerrari->adjustMoveSpeed(_stepperFerrari->getStatus().rpm < 0 ? min(-speedNewRpm, speedNewRpm) : max(-speedNewRpm, speedNewRpm));
     }
 }

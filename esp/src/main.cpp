@@ -34,7 +34,7 @@ void setup()
                     .maxCurrent = 700,
                     .microstepsPerStep = 32,
                     .stepsPerRotation = 200,
-                    .mmPerRotation = 10,
+                    .mmPerRotation = 8,
                     .gearRatio = 1,
                     //.default_acceleration = 10000,
                     //.stall = 7,
