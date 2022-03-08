@@ -1,13 +1,14 @@
 #pragma once
 
-// Built in Library inclusions
+// Related
+// System / External
 #include <Arduino.h> // Arduino standard library
 #include <DNSServer.h> // Redirect every AP Request to Webinterface
-
-// External Library inclusions
 #include <ArduinoJson.h> // Encode and Decode JSON messages 
 #include <timer.h> // Timer to schedule Commands
 #include <ESPAsyncWebServer.h> // Serve Website and create Websocket
+// Selfmade
+// Project
 
 /**
  * @brief Manages creation and handeling of dns and websockets

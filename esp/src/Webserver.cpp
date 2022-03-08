@@ -1,4 +1,15 @@
+// Related
 #include <Webserver.h>
+// System / External
+#include <Arduino.h> // Arduino standard library
+#include <DNSServer.h> // Redirect every AP Request to Webinterface
+#include <ESPmDNS.h> // Make Interface available at winder.local
+#include <ArduinoJson.h> // Encode and Decode JSON messages 
+#include <timer.h> // Timer to schedule Commands
+#include <ESPAsyncWebServer.h> // Serve Website and create Websocket
+#include <LITTLEFS.h> // Store Webinterface in Filesystem
+// Selfmade
+// Project
 
 // TODO: Replace with proper debugging/logging
 #ifdef DEBUG_WINDER
@@ -10,17 +21,6 @@
   #define DEBUG_PRINTLN(x)
   #define DEBUG_PRINTF(x...)
 #endif
-
-// Built in Library inclusions
-#include <Arduino.h> // Arduino standard library
-#include <DNSServer.h> // Redirect every AP Request to Webinterface
-#include <ESPmDNS.h> // Make Interface available at winder.local
-
-// External Library inclusions
-#include <ArduinoJson.h> // Encode and Decode JSON messages 
-#include <timer.h> // Timer to schedule Commands
-#include <ESPAsyncWebServer.h> // Serve Website and create Websocket
-#include <LITTLEFS.h> // Store Webinterface in Filesystem
 
 void Webserver::dnsLoop()
 {

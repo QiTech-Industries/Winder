@@ -1,6 +1,10 @@
+// Related
 #include <WinderWifi.h>
-
+// System / External
 #include <WiFi.h>
+// Selfmade
+// Project
+#include <QiMachineWinder.h>
 
 // TODO: replace with proper logging
 #ifdef DEBUG_WINDER
@@ -13,26 +17,28 @@
   #define DEBUG_PRINTF(x...)
 #endif
 
-void WinderWifi::changeMode(connection_e to){
-    connection = to;
-    if (_cb)
-        _cb();
+void WinderWifi::changeMode(wifiConnectionMode_e newMode) {
+    _connectionMode = newMode; // TODO: Remove access on global var
+    if (_connectionChangeCallback) _connectionChangeCallback();
 };
 
-WinderWifi::WinderWifi() : _timer(this, &WinderWifi::loop)
-{
+WinderWifi::WinderWifi(QiMachineWinder& winder) : _machine(winder), _timer(this, &WinderWifi::handle) {};
+
+void WinderWifi::start(){
     WiFi.scanNetworks(true);
     _timer.setInterval(1000);
     _timer.start();
+}
+
+configurationWifi_s& WinderWifi::getConfiguration(){
+    return _machine.getConfigurationSoft().wifi; // TODO: replace with non-global code
+}
+
+void WinderWifi::setConnectionChangeCallback(std::function<void()> newCallBack) {
+    _connectionChangeCallback = newCallBack;
 };
 
-void WinderWifi::conChange(std::function<void()> cb)
-{
-    _cb = cb;
-};
-
-void WinderWifi::connect(const char *ssid, const char *password)
-{
+void WinderWifi::connect(const char *ssid, const char *password) {
     _ssid = ssid;
     _password = password;
 
@@ -45,27 +51,23 @@ void WinderWifi::connect(const char *ssid, const char *password)
     changeMode(CONNECTING);
 };
 
-void WinderWifi::createAP(const char* ssid, const char* password)
-{
+void WinderWifi::createAP(const char* ssid, const char* password) {
     WiFi.softAP(ssid, password);
     DEBUG_PRINTLN(String("[Wifi] Access Point IP: ") + WiFi.softAPIP().toString());
 };
 
-String WinderWifi::scan()
-{
-    int n = WiFi.scanComplete();
-    if (n == -2)
-    { // Scan not triggered
+String WinderWifi::scan() {
+    int numberOfNetworks = WiFi.scanComplete();
+    if (numberOfNetworks == -2) { // Scan not triggered
         WiFi.scanNetworks(true);
         return String("{\"networks\": []}");
     }
 
+    // Assemble json-formatted answer
     // TODO: Creating a json with string-concatenation is not exactly efficient / beautiful
     String json = "{\"networks\":[";
-    for (int i = 0; i < n; ++i)
-    {
-        if (i)
-            json += ",";
+    for (int i = 0; i < numberOfNetworks; ++i) {
+        if (i) json += ",";
         json += "{";
         json += "\"rssi\":" + String(WiFi.RSSI(i));
         json += ",\"ssid\":\"" + WiFi.SSID(i) + "\"";
@@ -73,62 +75,51 @@ String WinderWifi::scan()
         json += "}";
     }
     WiFi.scanDelete();
-    if (WiFi.scanComplete() == -2)
-    {
-        WiFi.scanNetworks(true);
-    }
-    json += "],\"current\":" + (WiFi.isConnected() ? ("\"" + String(soft.wifi.ssid) + "\"") : "null") + "}";
+    if (WiFi.scanComplete() == -2) WiFi.scanNetworks(true);
+    json += "],\"current\":" + (WiFi.isConnected() ? ("\"" + String(getConfiguration().ssid) + "\"") : "null") + "}";
+
     return json;
 };
 
-void WinderWifi::loop()
-{
-    // Save Wifi Credentials on connection
-    if (connection != ONLINE && WiFi.isConnected())
-    {
+void WinderWifi::handle() {
+    if (_connectionMode != ONLINE && WiFi.isConnected()) {
+        // Save Wifi Credentials on connection
         DEBUG_PRINTLN("[Wifi] Wifi successfully connected");
 
-        strcpy(soft.wifi.ssid, _ssid);
-        strcpy(soft.wifi.password, _password);
+        strcpy(getConfiguration().ssid, _ssid);
+        strcpy(getConfiguration().password, _password);
 
         _currentTimeout = 0;
 
         changeMode(ONLINE);
-    }
-
-    // Start AP if connection failed
-    else if (connection == CONNECTING && !WiFi.isConnected())
-    {
+    } else if (_connectionMode == CONNECTING && !WiFi.isConnected()) {
+        // Start AP if connection failed
         _currentTimeout++;
-        if (_currentTimeout >= _timeout)
-        {
+        if (_currentTimeout >= _timeout) {
             DEBUG_PRINTLN("[Wifi] Could not connect to Wifi.");
             changeMode(OFFLINE);
             _currentTimeout = 0;
 
             // connect to previous network if new failed
-            if (soft.wifi.ssid != _ssid)
-            {
-                connect(soft.wifi.ssid, soft.wifi.password);
-            }
-            else
-            {
+            if (getConfiguration().ssid != _ssid) {
+                connect(getConfiguration().ssid, getConfiguration().password);
+            } else {
                 WiFi.disconnect(true, false);
             }
 
             // Start emergency Access Point
-            if (!soft.wifi.ap_enabled)
-            {
+            if (!getConfiguration().ap_enabled) {
                 DEBUG_PRINTLN("[Wifi] Starting in AP mode instead.");
-                soft.wifi.ap_enabled = true;
-                createAP("Winder", "");
+                getConfiguration().ap_enabled = true;
+                createAP("Winder", ""); // TODO: Hardcoded name/password for emergency access point
             }
         }
-    }
-
-    else if (connection == ONLINE && !WiFi.isConnected())
-    {
+    } else if (_connectionMode == ONLINE && !WiFi.isConnected()) {
         DEBUG_PRINTLN("[Wifi] Network disconnected");
         changeMode(OFFLINE);
     }
 };
+
+wifiConnectionMode_e WinderWifi::getConnectionMode(){
+    return _connectionMode;
+}

@@ -1,3 +1,16 @@
+// Related
+#include <QiUpdater.h>
+// System / External
+#include <string>
+#include <stdint.h>
+#include <timer.h>
+#include <HTTPClient.h>
+#include <Update.h> // Update Frimware and Interface
+// Selfmade
+// Project
+#include <QiMachineWinder.h>
+#include <QiMachineWinderConfiguration.h>
+
 // TODO: Replace with proper debugging/logging
 #ifdef DEBUG_WINDER
   #define DEBUG_PRINT(x) Serial.print(x)
@@ -9,37 +22,27 @@
   #define DEBUG_PRINTF(x...)
 #endif
 
-#include <QiUpdater.h>
-
-#include <string>
-#include <stdint.h>
-#include <timer.h>
-#include <HTTPClient.h>
-#include <Update.h> // Update Frimware and Interface
-
-#include <store.h>
-
-QiUpdater::QiUpdater() : timer(this, &QiUpdater::check)
-{
+QiUpdater::QiUpdater(QiMachineWinder& winder) : _machine(winder), timer(this, &QiUpdater::check) {
     http.collectHeaders(headerKeys, 4);
 }
 
-void QiUpdater::restartMCU()
-{
+configurationMachineWinderSoftware_s& QiUpdater::getConfiguration(){
+    return _machine.getConfigurationSoft();
+}
+
+void QiUpdater::restartMCU() {
     ESP.restart();
     while (true) {}; // Wait for microcontroller to finally die
 }
 
-void QiUpdater::setInterval(uint16_t interval)
-{
+void QiUpdater::setInterval(uint16_t interval) {
     timer.setInterval(interval);
     timer.start();
 }
 
-void QiUpdater::check()
-{
-    if (!WiFi.isConnected() || Update.isRunning() || mode != STANDBY)
-    {
+void QiUpdater::check() {
+    // Check whether we are ready for an update
+    if (!WiFi.isConnected() || Update.isRunning() || _machine.getCurrentMode() != OPERATE_STANDBY) {
         return;
     }
 
@@ -53,62 +56,52 @@ void QiUpdater::check()
     String date = http.header(headerKeys[3]);
     int partition; // Identifier which partition has to be updated and thus rewritten
 
-    if (XUpdate == "spiffs")
-    {
+    if (XUpdate == "spiffs") {
         partition = U_SPIFFS;
-        strcpy(soft.software.spiffs.version, XVersion.c_str());
-        strcpy(soft.software.spiffs.build, XBuild.c_str());
-        strcpy(soft.software.spiffs.date, date.substring(0, 16).c_str());
-    }
-    else if (XUpdate == "firmware")
-    {
+        strcpy(getConfiguration().software.spiffs.version, XVersion.c_str());
+        strcpy(getConfiguration().software.spiffs.build, XBuild.c_str());
+        strcpy(getConfiguration().software.spiffs.date, date.substring(0, 16).c_str());
+    } else if (XUpdate == "firmware") {
         partition = U_FLASH;
-        strcpy(soft.software.firmware.version, XVersion.c_str());
-        strcpy(soft.software.firmware.build, XBuild.c_str());
-        strcpy(soft.software.firmware.date, date.substring(0, 16).c_str());
-    }
-    else
-    {
+        strcpy(getConfiguration().software.firmware.version, XVersion.c_str());
+        strcpy(getConfiguration().software.firmware.build, XBuild.c_str());
+        strcpy(getConfiguration().software.firmware.date, date.substring(0, 16).c_str());
+    } else {
         DEBUG_PRINTLN("[Updater] No new Update available");
         return;
     }
 
     // Try to install new update
     int contentLength = http.getSize();
-    if (contentLength <= 0)
-    {
+    if (contentLength <= 0) {
         DEBUG_PRINTLN("[Updater] OTA Content-Length not defined");
         return;
     }
-    if (!Update.begin(contentLength, partition))
-    {
+    if (!Update.begin(contentLength, partition)) {
         DEBUG_PRINTLN("[Updater] Not enough space to begin OTA");
         return;
     }
     
-    soft.backup();
+    getConfiguration().backup();
     DEBUG_PRINTLN("[Updater] Starting update of " + XUpdate);
 
     Client &client = http.getStream();
     Update.writeStream(client);
 
-    if (!Update.end())
-    {
+    if (!Update.end()) {
         DEBUG_PRINTLN("[Updater] Error #" + String(Update.getError()));
         return;
     }
-    if (!Update.isFinished())
-    {
+    if (!Update.isFinished()) {
         DEBUG_PRINTLN("[Updater] Update failed.");
         return;
     }
 
     // Update succesful, tell server and restart
     http.setURL(overTheAirURL + "success/" + WiFi.macAddress());
-    DEBUG_PRINTLN(soft.asJSON());
+    DEBUG_PRINTLN(getConfiguration().asJSON());
 
-    if (http.GET() == HTTP_CODE_NO_CONTENT)
-    {
+    if (http.GET() == HTTP_CODE_NO_CONTENT) {
         DEBUG_PRINTLN("[Updater] Update successfully completed. Rebooting.");
         restartMCU();
     }
