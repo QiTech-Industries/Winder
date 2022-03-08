@@ -4,7 +4,7 @@ This document lists features and their requirements. It is meant to be used both
 ## Base features
 1. Persistent configuration
     - On machine-start the last known configuration is loaded and used if valid
-	- On ``???????????????`` the current configuration is saved
+	- On change (in the webfrontend) the current configuration is saved
 1. Standalone access point
 	- An access point can be created instead of using an external wifi, allowing for an independent operation of the machine
 	- If no wifi is available / specified, an access point is created (even if previously disabled), preventing the user from locking himself out
@@ -34,15 +34,15 @@ Called by the user via browser
 		- Reload-Button for forcing a rebuild of the wifi-list
 1. View: Control
 	- View in which commands can be issued to the machine. Changing the view does NOT stop currently running operations
-	- Motor-status ("puller", "ferrari", "spool")
+	- Section: Motor-status ("puller", "ferrari", "spool")
 		- For each motor display:
 		- Current rotations in rpm (negative values depending on direction)
 		- power(on/off)
 		- Alternatively (on click) a graph with the speed/load of the last minute
-	- Speed Adjust
+	- Section: Speed Adjust
 		- Adjust the motorspeeds immediately on change of the slider without interrupting the current operation if any
 		- The speed is based on the puller-speed in filament-length wound per minute(m/min)
-	- Statistics
+	- Section: Statistics
 		- Displays winding-related metrics:
 		- Filament wound in meters
 			- TODO: Not yet functional
@@ -80,14 +80,15 @@ Called by the user via browser
 			- Enter OFF-mode
 			- Immediately unpower all motors, stopping all operations (emergency feature). The ferrari will need to be rehomed after this operation.
 1. View: Configure
-	- Configure wifi
+	- Configuration changes are immediately persistently saved on the machine
+	- Section: Configure wifi
 		- Device name
 		- Access Point Name
 		- (De-)Activate Access point
-	- Spool calibration
+	- Section: Spool calibration
 		- When in active operation mode(pulling, winding etc.): Use the adjusted position without interrupting the current operation
 		- When in standby: move ferrari to last adjusted position
-	- Display technical details
+	- Section: Display technical details
 		- Hardware Info
 			- Board
 			- Revision

@@ -69,7 +69,7 @@ void configurationMachineWinderSoftware_s::fromJSON(char *json) {
 void configurationMachineWinderSoftware_s::store() {
     File f = LITTLEFS.open("/winder.conf", "w");
     if (f) {
-        f.write((byte *)this, sizeof(this));
+        f.write((byte *)this, sizeof(configurationMachineWinderSoftware_s));
         Serial.println("[Store] /winder.conf saved");
     }
     f.close();
@@ -135,7 +135,7 @@ bool configurationMachineWinderSoftware_s::load() {
     // Load configuration from filesystem
     File f = LITTLEFS.open("/winder.conf", "r");
     if (f) {
-        f.read((byte *)this, sizeof(this));
+        f.read((byte *)this, sizeof(configurationMachineWinderSoftware_s));
         Serial.println("[Store] /winder.conf loaded from Filesystem.");
         f.close();
         return true;

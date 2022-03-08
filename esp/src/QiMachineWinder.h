@@ -19,7 +19,7 @@ enum machineWinderOperation_e{
     OPERATE_PULLING, // Puller-motor is active
     OPERATE_WINDING, // Winding filament on spools with adjusted pulling-strength
     OPERATE_UNWINDING, // Unwinding filament from the spool
-    OPERATE_CALIBRATING // Interactive calibtration of the ferraris end-positions
+    OPERATE_CALIBRATING // Interactive calibtration of the ferraris end-positions // TODO: Unused due to redesign, remove?
 };
 
 /**
@@ -140,6 +140,13 @@ class QiMachineWinder{
          * @brief Do nothing and unpower motors
          */
         void operateOff();
+
+        /**
+         * @brief Help with calibration of ferrari by positioning it to the specified position, allowing for precise adjustments
+         * 
+         * @param calibrationPosition position to move ferrari to 
+         */
+        void operateCalibrate(uint16_t calibrationPosition);
 
         /**
          * @brief Change the current speed without changing or interrupting the operation mode

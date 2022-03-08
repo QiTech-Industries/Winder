@@ -34,7 +34,6 @@ float QiMachineWinder::fixSpeedValue(float speedMetersPerMinute){
 }
 
 void QiMachineWinder::init(configurationMachineWinder_s conf){
-    logPrint(INFO, INFO, "QiMachineWinder::init\n"); // TODO: DEBUG
     printBanner();
     
     // Save and read configuration
@@ -71,13 +70,15 @@ void QiMachineWinder::init(configurationMachineWinder_s conf){
     _stepperPuller->setDebuggingLevel(ERROR);
 
     // Load previous configuration from file system
+
+    Serial.print("[Store] Default config: ");
+    Serial.println(_configurationSoft.asJSON());
     if (!_configurationSoft.load()) {
         // Failed to load configuration, return to specified values
         _configurationSoft = conf.soft;
+        Serial.print("[Store] Loaded config: ");
+        Serial.println(_configurationSoft.asJSON());
     }
-    Serial.println(_configurationSoft.asJSON()); // TODO: Debug/Logging
-    _configurationSoft.ferrari_min = conf.soft.ferrari_min; // TODO: Termporarily discard read ferrari-positioning-values
-    _configurationSoft.ferrari_max = conf.soft.ferrari_max; // TODO: Termporarily discard read ferrari-positioning-values
 
     // Create HTTP server and websocket
     _server.create(_configurationHard.server.port, _configurationHard.server.default_path, _configurationSoft.wifi.mdns_name, _configurationSoft.wifi.friendly_name);
@@ -105,17 +106,26 @@ void QiMachineWinder::init(configurationMachineWinder_s conf){
                 return String();
                 });
     _server.on("calibrate", [=](JsonObject data)
-                { // TODO: Calibtrate the start- or end-position of the ferrari
+                { // Set new start- or end-position for the ferrari-oscillation
                 // Parse parameters (no validity check necessary)
                 uint16_t newPositionValue = data["position"].as<uint16_t>();
                 bool newPositionIsStart = data["startPos"].as<bool>();
 
                 // Execute command
-                if(newPositionIsStart){
-                    adjustOscillationPositions(newPositionValue, _configurationSoft.ferrari_max);
+                if(_currentWinderOperation == OPERATE_STANDBY || _currentWinderOperation == OPERATE_OFF){
+                    // Nothing to do, lets immediately move to the new position to make calibration easier
+                    // TODO: Implement
+                    operateCalibrate(newPositionValue);
                 } else {
-                    adjustOscillationPositions(_configurationSoft.ferrari_min, newPositionValue);
+                    if(newPositionIsStart){
+                        adjustOscillationPositions(newPositionValue, _configurationSoft.ferrari_max);
+                    } else {
+                        adjustOscillationPositions(_configurationSoft.ferrari_min, newPositionValue);
+                    }
                 }
+                
+                // Store new configuration
+                _configurationSoft.store(); // TODO: must be called async or esp might crash on watchdog trigger
                 return String();
                 });
     _server.on("wind", [=](JsonObject data)
@@ -176,6 +186,12 @@ void QiMachineWinder::init(configurationMachineWinder_s conf){
                 if (data["ap_ssid"] != "") {
                     strcpy(_configurationSoft.wifi.ap_ssid, data["ap_ssid"]);
                 }
+
+                // Apply wifi-related changes
+                // TODO: Implement
+
+                // Store new configuration
+                _configurationSoft.store(); // TODO: must be called async or esp might crash on watchdog trigger
 
                 // TODO: Manually force configuration save?
                 return String("\"stored\"");
@@ -277,12 +293,13 @@ void QiMachineWinder::operateWind(float speedMetersPerMinute){
     _currentWinderOperation = OPERATE_WINDING;
 }
 
-void QiMachineWinder::operateCalibrate(){
+void QiMachineWinder::operateCalibrate(uint16_t calibrationPosition){
+    const float FERRARI_POSITIONING_SPEED = 100;
     logPrint(INFO, INFO, "QiMachineWinder::operateCalibrate\n"); // TODO: DEBUG
-    // TODO: Implement
     _stepperSpool->switchModeStandby();
+    _stepperFerrari->movePosition(-FERRARI_POSITIONING_SPEED, calibrationPosition);
     _stepperPuller->switchModeStandby();
-    _currentWinderOperation = OPERATE_CALIBRATING;
+    _currentWinderOperation = OPERATE_STANDBY; // TODO: Switch to other mode?
 }
 
 void QiMachineWinder::operateStandby(){
@@ -356,10 +373,6 @@ void QiMachineWinder::handleStatusReport() {
     stepperStatus_s spoolStatus = _stepperSpool->getStatus();
     stepperStatus_s ferrariStatus = _stepperFerrari->getStatus();
     stepperStatus_s pullerStatus = _stepperPuller->getStatus();
-
-    // Save current configuration
-    // TODO: Commented out due to bugs
-    //soft.store(); // must be called async or esp might crash on watchdog trigger
 
     // Assemble report message
     StaticJsonDocument<512> doc;
