@@ -116,6 +116,11 @@ void QiMachineWinder::init(configurationMachineWinder_s conf){
                     // Nothing to do, lets immediately move to the new position to make calibration easier
                     // TODO: Implement
                     operateCalibrate(newPositionValue);
+                    if(newPositionIsStart){
+                        _configurationSoft.ferrari_min = newPositionValue;
+                    } else {
+                        _configurationSoft.ferrari_max = newPositionValue;
+                    }
                 } else {
                     if(newPositionIsStart){
                         adjustOscillationPositions(newPositionValue, _configurationSoft.ferrari_max);
@@ -356,7 +361,7 @@ void QiMachineWinder::adjustOscillationPositions(uint16_t positionStart, uint16_
             break;
         case OPERATE_WINDING:
             // TODO: Implement
-            // _stepperFerrari.XXXXXX
+            _stepperFerrari->adjustMovePositions(positionStart, positionEnd);
             break;
         case OPERATE_CALIBRATING:
             // TODO: Implement
