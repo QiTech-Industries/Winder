@@ -70,7 +70,6 @@ void QiMachineWinder::init(configurationMachineWinder_s conf){
     _stepperPuller->setDebuggingLevel(ERROR);
 
     // Load previous configuration from file system
-
     Serial.print("[Store] Default config: ");
     Serial.println(_configurationSoft.asJSON());
     if (!_configurationSoft.load()) {
@@ -238,6 +237,9 @@ void QiMachineWinder::init(configurationMachineWinder_s conf){
     _timedReporter->start();
     _timedSpeedAdjuster->setInterval(100);
     _timedSpeedAdjuster->start();
+
+    // Start in Standby by default
+    operateStandby();
 }
 
 void QiMachineWinder::handle(){
@@ -445,9 +447,9 @@ void QiMachineWinder::handleSpeedAdjust(){
 const char* machineWinderOperationToString(machineWinderOperation_e machineOperation){
     switch(machineOperation){
         case OPERATE_OFF:
-            return "off";
+            return "standby"; // TODO: Legacy, adjust and update webfrontend to something more intuitive
         case OPERATE_STANDBY:
-            return "standby";
+            return "power"; // TODO: Legacy, adjust and update webfrontend to something more intuitive
         case OPERATE_PULLING:
             return "pulling";
         case OPERATE_WINDING:

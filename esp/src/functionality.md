@@ -2,6 +2,8 @@
 This document lists features and their requirements. It is meant to be used both as documentation and as a template for testprotocols.
 
 ## Base features
+1. Power up motors on start
+	- The humming of the motors indicates that the machine has succesfully started
 1. Persistent configuration
     - On machine-start the last known configuration is loaded and used if valid
 	- On change (in the webfrontend) the current configuration is saved
