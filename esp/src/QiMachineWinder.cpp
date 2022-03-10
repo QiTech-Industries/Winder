@@ -19,9 +19,7 @@ void QiMachineWinder::printBanner(){
     );
 }
 
-QiMachineWinder::QiMachineWinder() : _updater(*this), _wifi(*this){
-    _wifi.start();
-}
+QiMachineWinder::QiMachineWinder() : _updater(*this), _wifi(*this){}
 
 configurationMachineWinderSoftware_s& QiMachineWinder::getConfigurationSoft(){
     return _configurationSoft;
@@ -206,6 +204,7 @@ void QiMachineWinder::init(configurationMachineWinder_s conf){
                 });
 
     // Connect to Wifi and create AP
+    _wifi.start();
     if (strlen(_configurationSoft.wifi.ssid)) {
         _wifi.connect(_configurationSoft.wifi.ssid, _configurationSoft.wifi.password);
     }

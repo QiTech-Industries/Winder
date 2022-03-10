@@ -22,7 +22,7 @@
   #define DEBUG_PRINTF(x...)
 #endif
 
-QiUpdater::QiUpdater(QiMachineWinder& winder) : _machine(winder), timer(this, &QiUpdater::check) {
+QiUpdater::QiUpdater(QiMachineWinder& winder) : _machine(winder), timer(this, &QiUpdater::handle) {
     http.collectHeaders(headerKeys, 4);
 }
 
@@ -40,9 +40,9 @@ void QiUpdater::setInterval(uint16_t interval) {
     timer.start();
 }
 
-void QiUpdater::check() {
+void QiUpdater::handle() {
     // Check whether we are ready for an update
-    if (!WiFi.isConnected() || Update.isRunning() || _machine.getCurrentMode() != OPERATE_STANDBY) {
+    if (!WiFi.isConnected() || Update.isRunning() || (_machine.getCurrentMode() != OPERATE_OFF && _machine.getCurrentMode() != OPERATE_STANDBY)) {
         return;
     }
 
@@ -97,12 +97,15 @@ void QiUpdater::check() {
         return;
     }
 
-    // Update succesful, tell server and restart
+    // Update succesful, tell server
     http.setURL(overTheAirURL + "success/" + WiFi.macAddress());
     DEBUG_PRINTLN(getConfiguration().asJSON());
 
+    // Do NOT restart to avoid interrupting the users real life workflow
+    /*
     if (http.GET() == HTTP_CODE_NO_CONTENT) {
         DEBUG_PRINTLN("[Updater] Update successfully completed. Rebooting.");
         restartMCU();
     }
+    */
 }

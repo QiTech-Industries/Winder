@@ -50,7 +50,7 @@ public:
     void setInterval(uint16_t interval);
 
     /**
-     * @brief Repeatedly called by timer, checks for new updates, downloads / installs them when available and triggers restarts of the microcontroller as needed
+     * @brief Repeatedly called by timer, checks for new updates, downloads / installs them when available
      */
-    void check(); // TODO: Rename to handle() ?
+    void handle();
 };
