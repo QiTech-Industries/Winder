@@ -287,11 +287,14 @@ void QiMachineWinder::operateWind(float speedMetersPerMinute){
     if(_currentWinderOperation == OPERATE_PULLING || _currentWinderOperation == OPERATE_WINDING){
         // Keep rotating without interrupt
         _stepperPuller->adjustMoveSpeed(-speedRpm);
+        if(_currentWinderOperation == OPERATE_WINDING){
+            _stepperSpool->adjustMoveSpeed(speedRpm / 3); // TODO: Hardcoded
+        }
     } else {
         _stepperPuller->moveRotate(-speedRpm);
     }
     if(_currentWinderOperation != OPERATE_WINDING) {
-        _stepperSpool->moveRotateWithLoadAdjust(-speedRpm, DESIRED_SPOOL_LOAD);
+        _stepperSpool->moveRotateWithLoadAdjust(speedRpm / 3, 5); // TODO: Hardcoded - DESIRED_SPOOL_LOAD?
         _stepperFerrari->moveOscillate(speedRpm, _configurationSoft.ferrari_min, _configurationSoft.ferrari_max); // Oscillate, speed will be adjusted repeatedly in handleSpeedAdjust()
     }
 

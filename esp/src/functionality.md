@@ -12,7 +12,7 @@ This document lists features and their requirements. It is meant to be used both
 	- If no wifi is available / specified, an access point is created (even if previously disabled), preventing the user from locking himself out
 	- Connecting to the access point will automatically redirect the user to the machines webfrontend (does not work in all browsers)
 1. Autoupdater
-	- While in standby, the machine will periodically check for updates when connected to an external wifi, and install them if possible
+	- While idling, the machine will periodically check for updates when connected to an external wifi, and install them on the next machine-start if possible
 
 ## Webfrontend
 Called by the user via browser
