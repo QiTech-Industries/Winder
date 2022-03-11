@@ -8,7 +8,7 @@
 #include "controller/stepper/Stepper.h"
 // Project
 
-// TODO: Refactor and remove store.h
+// TODO: Include magic inside configuration to avoid broken configurations
 
 /**
  * @brief Version of a component / configuration

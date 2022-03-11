@@ -124,7 +124,7 @@ bool configurationMachineWinderSoftware_s::load() {
     const esp_partition_t *spiffs = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_SPIFFS, NULL);
     esp_partition_read(spiffs, 0, buffer, 1);
     if (buffer[0] == 0xff) {
-        Serial.println("[Store] No Filesystem image found. Execution terminated.");
+        Serial.println("[Store] No Filesystem image found. Only API access possible.");
         return false;
     }
     if (!LITTLEFS.begin()) {
