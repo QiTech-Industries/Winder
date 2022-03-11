@@ -92,7 +92,7 @@ class Webserver{
         /**
          * @brief Creates and starts a dns-server
          * 
-         * @param ip adress of the dns-server
+         * @param ip address of the dns-server
          */
         void createCaptive(IPAddress ip);
 

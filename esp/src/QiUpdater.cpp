@@ -97,15 +97,14 @@ void QiUpdater::handle() {
         return;
     }
 
-    // Update succesful, tell server
+    // Update successful, tell server
     http.setURL(overTheAirURL + "success/" + WiFi.macAddress());
     DEBUG_PRINTLN(getConfiguration().asJSON());
 
-    // Do NOT restart to avoid interrupting the users real life workflow
-    /*
+    // Notify server about update success
     if (http.GET() == HTTP_CODE_NO_CONTENT) {
-        DEBUG_PRINTLN("[Updater] Update successfully completed. Rebooting.");
-        restartMCU();
+        DEBUG_PRINTLN("[Updater] Update successfully completed.");
+        // Do NOT restart to avoid interrupting the users real life workflow
+        //restartMCU();
     }
-    */
 }

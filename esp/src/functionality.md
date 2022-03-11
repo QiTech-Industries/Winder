@@ -1,9 +1,9 @@
 # Functionality and features
-This document lists features and their requirements. It is meant to be used both as documentation and as a template for testprotocols.
+This document lists features and their requirements. It is meant to be used both as documentation and as a template for test protocols.
 
 ## Base features
 1. Power up motors on start
-	- The humming of the motors indicates that the machine has succesfully started
+	- The humming of the motors indicates that the machine has successfully started
 1. Persistent configuration
     - On machine-start the last known configuration is loaded and used if valid
 	- On change (in the webfrontend) the current configuration is saved
@@ -42,7 +42,7 @@ Called by the user via browser
 		- power(on/off)
 		- Alternatively (on click) a graph with the speed/load of the last minute
 	- Section: Speed Adjust
-		- Adjust the motorspeeds immediately on change of the slider without interrupting the current operation if any
+		- Adjust the motor speeds immediately on change of the slider without interrupting the current operation if any
 		- The speed is based on the puller-speed in filament-length wound per minute(m/min)
 	- Section: Statistics
 		- Displays winding-related metrics:
@@ -55,7 +55,7 @@ Called by the user via browser
 			- TODO: Not yet functional
 		- Estimated weight in g
 			- TODO: Not yet functional
-	- A controlpanel on the bottom of the page to issue commands to the machine, switching between operation modes
+	- A control panel on the bottom of the page to issue commands to the machine, switching between operation modes
 		- Only available commands are displayed, depending on the current operation mode
 		- Button "Start Puller"
 			- Available in STANDBY-/OFF-mode
@@ -64,7 +64,7 @@ Called by the user via browser
 		- Button "Start Winding"
 			- Available in PULLING-mode
 			- Enter WIND-mode
-			- Continue running the puller and start rotating the spool with automatic load-adjust. Oscillate the ferrari between the start- and end-position, automatically synchronising its speed with the spool for continuous winding-results
+			- Continue running the puller and start rotating the spool with automatic load-adjust. Oscillate the ferrari between the start- and end-position, automatically synchronizing its speed with the spool for continuous winding-results
 		- Button "Unwind"
 			- Available in all modes except UNWIND-mode
 			- Enter UNWIND-mode
@@ -76,11 +76,11 @@ Called by the user via browser
 		- Button "Change spool"
 			- Available in WIND-mode
 			- Enter PULLING-mode
-			- Reposition the ferrari to the startposition, stop the spool and continue running the puller. Meant for changing the spool while the external extruder is still running
+			- Reposition the ferrari to the start-position, stop the spool and continue running the puller. Meant for changing the spool while the external extruder is still running
 		- Button "Off"
 			- Available in all modes
 			- Enter OFF-mode
-			- Immediately unpower all motors, stopping all operations (emergency feature). The ferrari will need to be rehomed after this operation.
+			- Immediately un-power all motors, stopping all operations (emergency feature). The ferrari will need to be re-homed after this operation.
 1. View: Configure
 	- Configuration changes are immediately persistently saved on the machine
 	- Section: Configure wifi

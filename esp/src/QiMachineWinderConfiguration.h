@@ -96,7 +96,7 @@ public:
      * Also calls loadBlynkCredentials()
      * 
      * @return true success, configuration loaded
-     * @return false error occured (such as filesystem not being available)
+     * @return false error occurred (such as filesystem not being available)
      */
     bool load();
 };

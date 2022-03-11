@@ -44,5 +44,22 @@
         "utility": "cpp",
         "typeinfo": "cpp"
     },
-    "files.insertFinalNewline": true
+    "files.insertFinalNewline": true,
+    "cSpell.words": [
+        "Autoupdater",
+        "Blynk",
+        "datasheet",
+        "EEPROM",
+        "everchanging",
+        "LITTLEFS",
+        "mdns",
+        "microcontroller",
+        "microcontrollers",
+        "platformio",
+        "rssi",
+        "ssid",
+        "Webfrontend",
+        "webinterface",
+        "wifis"
+    ]
 }

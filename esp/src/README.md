@@ -1,7 +1,7 @@
 # About: Jarvis Winder
 This project covers the code for the Jarvis Winder, which is a machine for winding filaments used for 3D-printing. The projects and its parts are property of QiTech Industries and must not be altered, copied or distributed without written permission.
 ## Purpose
-The winder is used to wind freshly extruded filament on spools and rewind filament from one spool to another. The machine can be controlled via webinterface, which can be accessed with mobiled devices, too. The winder can either log into an existing wifi or create its own on the fly.
+The winder is used to wind freshly extruded filament on spools and rewind filament from one spool to another. The machine can be controlled via webinterface, which can be accessed with mobile devices, too. The winder can either log into an existing wifi or create its own on the fly.
 ## Documents
 For details on usage and specifications refer to the following manuals and documents:
 - TODO: User-Manual
@@ -33,9 +33,9 @@ TODO: Basic information and specs on used modules / microcontrollers for the dev
 - Board: TODO
 
 # Formalities
-## Licences
-Here is a list of licences for the libraries and components being used:
-| Library | Info | Licence |
+## Licenses
+Here is a list of licenses for the libraries and components being used:
+| Library | Info | License |
 |---|---|---|
 | ArduinoJson.h | https://arduinojson.org/ | MIT |
 | timer.h | https://github.com/contrem/arduino-timer ? | BSD |

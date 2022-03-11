@@ -144,7 +144,7 @@ void Webserver::createSocket(String path)
                                 }
                                 // TODO: abort on error?
                                 
-                                // Extract data from deserialised json
+                                // Extract data from deserialized json
                                 DEBUG_PRINTLN("[Server]" + request.json);
                                 request.event = doc["event"].as<String>();
                                 request.data = doc["data"];
