@@ -122,9 +122,9 @@ void QiMachineWinder::init(configurationMachineWinder_s conf){
                     }
                 } else {
                     if(newPositionIsStart){
-                        adjustOscillationPositions(newPositionValue, _configurationSoft.ferrari_max);
+                        adjustOscillationPositions(_configurationSoft.ferrari_max, newPositionValue);
                     } else {
-                        adjustOscillationPositions(_configurationSoft.ferrari_min, newPositionValue);
+                        adjustOscillationPositions(newPositionValue, _configurationSoft.ferrari_min);
                     }
                 }
                 
@@ -256,8 +256,8 @@ void QiMachineWinder::operatePull(float speedMetersPerMinute){
     logPrint(INFO, INFO, "QiMachineWinder::operatePull speedMpm: %.2f, speedRpm: %.2f, ferrariPos: %d\n", speedMetersPerMinute, speedRpm, _configurationSoft.ferrari_min); // TODO: DEBUG
     
     // Rotate puller, disable spool, position ferrari at start position for following winding
-    _stepperSpool->switchModeStandby();
-    _stepperFerrari->movePosition(-FERRARI_POSITIONING_SPEED, _configurationSoft.ferrari_min);
+    _stepperSpool->switchModeOff();
+    _stepperFerrari->movePosition(-FERRARI_POSITIONING_SPEED, _configurationSoft.ferrari_max);
     if(_currentWinderOperation == OPERATE_PULLING || _currentWinderOperation == OPERATE_WINDING){
         // Keep rotating without interrupt
         _stepperPuller->adjustMoveSpeed(-speedRpm);
@@ -273,7 +273,7 @@ void QiMachineWinder::operateUnwind(float speedMetersPerMinute){
     float speedRpm = speedMetersPerMinute * 1000 / _configurationHard.motors.puller.mmPerRotation;
     
     _stepperSpool->switchModeOff();
-    _stepperFerrari->movePosition(-FERRARI_POSITIONING_SPEED, _configurationSoft.ferrari_min);
+    _stepperFerrari->movePosition(-FERRARI_POSITIONING_SPEED, _configurationSoft.ferrari_max);
     _stepperPuller->moveRotate(speedRpm);
     _currentWinderOperation = OPERATE_UNWINDING;
 }
@@ -288,14 +288,14 @@ void QiMachineWinder::operateWind(float speedMetersPerMinute){
         // Keep rotating without interrupt
         _stepperPuller->adjustMoveSpeed(-speedRpm);
         if(_currentWinderOperation == OPERATE_WINDING){
-            _stepperSpool->adjustMoveSpeed(speedRpm / 3); // TODO: Hardcoded
+            _stepperSpool->adjustMoveSpeed(-speedRpm / 5); // TODO: Hardcoded
         }
     } else {
         _stepperPuller->moveRotate(-speedRpm);
     }
     if(_currentWinderOperation != OPERATE_WINDING) {
-        _stepperSpool->moveRotateWithLoadAdjust(speedRpm / 3, 5); // TODO: Hardcoded - DESIRED_SPOOL_LOAD?
-        _stepperFerrari->moveOscillate(speedRpm, _configurationSoft.ferrari_min, _configurationSoft.ferrari_max); // Oscillate, speed will be adjusted repeatedly in handleSpeedAdjust()
+        _stepperSpool->moveRotateWithLoadAdjust(-speedRpm / 5, 15); // TODO: Hardcoded - DESIRED_SPOOL_LOAD?
+        _stepperFerrari->moveOscillate(speedRpm, _configurationSoft.ferrari_max, _configurationSoft.ferrari_min); // Oscillate, speed will be adjusted repeatedly in handleSpeedAdjust()
     }
 
     _currentWinderOperation = OPERATE_WINDING;
