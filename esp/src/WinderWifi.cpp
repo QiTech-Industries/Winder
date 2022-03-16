@@ -45,7 +45,7 @@ void WinderWifi::connect(const char *ssid, const char *password) {
     WiFi.hostname("");
     WiFi.begin(ssid, password);
 
-    DEBUG_PRINTLN(String("[Wifi] MAC Address: ") + WiFi.macAddress());
+    Serial.println(String("[Wifi] MAC Address: ") + WiFi.macAddress());
     DEBUG_PRINTF("[Wifi] Connecting to: %s\n", ssid);
 
     changeMode(CONNECTING);
