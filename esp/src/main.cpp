@@ -76,9 +76,9 @@ void setup()
                 // TODO: fix struct-initialisation
                 "QiTech", // .ssid = 
                 "Malte100%", // .password = 
-                "Jarvis Winder 2", // .ap_ssid = 
+                "Jarvis Winder", // .ap_ssid = 
                 "", // .ap_password = 
-                "Jarvis Winder 2", // .friendly_name = 
+                "Jarvis Winder", // .friendly_name = 
                 "winder", // .mdns_name = 
                 true, // .ap_enabled = 
             },
