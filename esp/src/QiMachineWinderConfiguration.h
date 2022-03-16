@@ -28,6 +28,7 @@ struct configurationMachineWinderHardware_s {
         stepperConfiguration_s puller; // Configuration of the puller-motor
         stepperConfiguration_s ferrari; // Configuration of the ferrari-motor
         stepperConfiguration_s spool; // Configuration of the spool-motor
+        float ferrariOffset; // Offset between calibration-position (laserpointer etc.) and winding-position in mm. Positive if winding is right of calibration, negative otherwise
     } motors; // Motor-related configurations
     struct server_s {
         uint16_t port; // TODO: Comment
