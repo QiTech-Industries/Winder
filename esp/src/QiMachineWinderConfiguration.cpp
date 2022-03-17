@@ -9,8 +9,6 @@
 // Project
 #include <QiMachineWinderConfiguration.h>
 
-// TODO: Refactor and remove Store.cpp
-
 Preferences prefs;
 
 String configurationMachineWinderSoftware_s::asJSON() {
@@ -148,7 +146,7 @@ bool configurationMachineWinderSoftware_s::load() {
         char buffer[512];
         prefs.getBytes("config", buffer, 512);
         Serial.println("[Store] Loading Backup into Config");
-        this->fromJSON(buffer); // TODO: write to winder-object
+        this->fromJSON(buffer);
     } else {
         Serial.println("[Store] No Data Backup found.");
     }

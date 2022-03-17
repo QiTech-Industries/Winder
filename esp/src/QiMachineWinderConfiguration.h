@@ -8,11 +8,8 @@
 #include "controller/stepper/Stepper.h"
 // Project
 
-// TODO: Include magic inside configuration to avoid broken configurations
-
 /**
  * @brief Version of a component / configuration
- * TODO: numbers (minor/major...) instead of char-arrays?
  */
 struct version_s {
     char version[50]; // Version, usually human-readable, examples: "milan-produktion", "v1.0.2s"
@@ -31,36 +28,36 @@ struct configurationMachineWinderHardware_s {
         float ferrariOffset; // Offset between calibration-position (laserpointer etc.) and winding-position in mm. Positive if winding is right of calibration, negative otherwise
     } motors; // Motor-related configurations
     struct server_s {
-        uint16_t port; // TODO: Comment
-        char default_path[32]; // TODO: Comment
-        char socket_path[32]; // TODO: Comment
-    } server; // TODO: Comment
+        uint16_t port; // Port for connections, should be 80
+        char default_path[32]; // Default ressource/path, for example "index.html"
+        char socket_path[32]; // path for websockets, for example "/ws"
+    } server; // Settings for the webfrontend
     struct device_s {
-        uint16_t hardware_version; // TODO: Comment
-    } device; // TODO: Comment
+        uint16_t hardware_version; // Version for identifying different hardwareconfigurations
+    } device; // Device related settings
 };
 
 struct configurationWifi_s {
-    char ssid[64]; // TODO: Comment
-    char password[34]; // TODO: Comment
-    char ap_ssid[64]; // TODO: Comment
-    char ap_password[34]; // TODO: Comment
-    char friendly_name[64]; // TODO: Comment // as shown in the router
-    char mdns_name[64]; // TODO: Comment     // {mdns_name}.local (winder domain)
-    bool ap_enabled; // TODO: Comment
+    char ssid[64]; // SSID of an existing wifi to connect to
+    char password[34]; // Password for connecting to an existing wifi
+    char ap_ssid[64]; // SSID of the accesspoint to be created
+    char ap_password[34]; // Login-password of the accesspoint to be created
+    char friendly_name[64]; // Name of accesspoint as shown to the user in his wifi-list
+    char mdns_name[64]; // Winder dns-name in form of {mdns_name}.local (winder domain)
+    bool ap_enabled; // true = enable access point, false = only enable access point as fallback if wifi-connection fails
 };
 
 /**
  * @brief Software configuration of the winder-machine
  */
 struct configurationMachineWinderSoftware_s {
-    configurationWifi_s wifi; // TODO: Comment
+    configurationWifi_s wifi; // Configuration details of wifi (connecting to an existing wifi and creation of an access point)
     struct software_s {
-        version_s spiffs; // TODO: Comment
-        version_s firmware; // TODO: Comment
-    } software; // TODO: Comment
-    uint16_t ferrari_min; // TODO: Comment
-    uint16_t ferrari_max; // TODO: Comment
+        version_s spiffs; // Version of the spiffs-filesystem image
+        version_s firmware; // Version of the firmware
+    } software; // Software related versions
+    uint16_t ferrari_min; // "left" endposition for the oscillation of the ferrari
+    uint16_t ferrari_max; // "right" endposition for the oscillation of the ferrari
 
 public:
     /**
@@ -78,12 +75,12 @@ public:
     void fromJSON(char* json);
 
     /**
-     * @brief TODO: Save configuration to filesystem. Must be called async or esp might crash on watchdog trigger
+     * @brief Save configuration to filesystem. Must be called async or esp might crash on watchdog trigger
      */
     void store();
 
     /**
-     * @brief TODO: Save JSON Config to EEPROM Backup
+     * @brief Save JSON Config to EEPROM Backup
      */
     void backup();
 
@@ -93,7 +90,7 @@ public:
     void loadBlynkCredentials();
 
     /**
-     * @brief TODO: Load configuration data from filesystem
+     * @brief Load configuration data from filesystem
      * Also calls loadBlynkCredentials()
      * 
      * @return true success, configuration loaded

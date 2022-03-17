@@ -41,7 +41,7 @@ void QiMachineWinder::init(configurationMachineWinder_s conf){
     _configurationHard = conf.hard;
 
     // Check pin-configuration
-    McValidator pinValidator = McValidator(); // TODO McValidatorEsp32();
+    McValidator pinValidator = McValidator(); // TODO Replace Dummy-Validator with McValidatorEsp32() ?
     if(!pinValidator.isDigitalPinValid(_configurationHard.motors.spool.pins.cs) ||
         !pinValidator.isDigitalPinValid(_configurationHard.motors.spool.pins.dir) ||
         !pinValidator.isDigitalPinValid(_configurationHard.motors.spool.pins.en) ||
@@ -84,7 +84,6 @@ void QiMachineWinder::init(configurationMachineWinder_s conf){
     _server.createSocket("/ws");
 
     // Add listeners for incoming socket events
-    // TODO: Document webinterface/api
     _server.on("connect", [=](JsonObject data)
                 { // Connect to a wifi with a given ssid and password
                 _wifi.connect(data["name"], data["password"]);
@@ -113,7 +112,6 @@ void QiMachineWinder::init(configurationMachineWinder_s conf){
                 // Execute command
                 if(_currentWinderOperation == OPERATE_STANDBY || _currentWinderOperation == OPERATE_OFF){
                     // Nothing to do, lets immediately move to the new position to make calibration easier
-                    // TODO: Implement
                     operateCalibrate(newPositionValue);
                     if(newPositionIsStart){
                         _configurationSoft.ferrari_min = newPositionValue;
@@ -164,7 +162,7 @@ void QiMachineWinder::init(configurationMachineWinder_s conf){
                 });
     _server.on("change", [=](JsonObject data)
                 { // Change spool - same as pulling
-                // TODO: Also very bad command-identifier
+                // TODO: "change" is a really unintuitive command-identifier
                 
                 // Execute command
                 operatePull(speedRpmToMpm(_stepperPuller->getStatus().rpm, _configurationHard.motors.puller.mmPerRotation)); // Keep pulling with same speed since we are already winding
@@ -181,9 +179,9 @@ void QiMachineWinder::init(configurationMachineWinder_s conf){
                 return String();
                 });
     _server.on("modify", [=](JsonObject data) 
-                { // TODO: "modify" is a really unintuitive command-identifier
+                { // Change the wifi-configuration
+                // TODO: "modify" is a really unintuitive command-identifier
                 _configurationSoft.wifi.ap_enabled = data["ap_enabled"];
-                // TODO: Verify parameters?
                 if (data["mdns_name"] != "") {
                     strcpy(_configurationSoft.wifi.mdns_name, data["mdns_name"]);
                 }
@@ -191,7 +189,7 @@ void QiMachineWinder::init(configurationMachineWinder_s conf){
                     strcpy(_configurationSoft.wifi.ap_ssid, data["ap_ssid"]);
                 }
 
-                // Apply wifi-related changes
+                // Apply wifi-related changes on the fly
                 // TODO: Implement
 
                 // Store new configuration
@@ -305,9 +303,9 @@ void QiMachineWinder::operateCalibrate(uint16_t calibrationPosition){
     const float FERRARI_POSITIONING_SPEED = 100;
     logPrint(INFO, INFO, "QiMachineWinder::operateCalibrate\n"); // TODO: DEBUG
     _stepperSpool->switchModeStandby();
-    _stepperFerrari->movePosition(-FERRARI_POSITIONING_SPEED, calibrationPosition); // TODO: Apply Laserpointer-offset
+    _stepperFerrari->movePosition(-FERRARI_POSITIONING_SPEED, calibrationPosition);
     _stepperPuller->switchModeStandby();
-    _currentWinderOperation = OPERATE_STANDBY; // TODO: Switch to other mode?
+    _currentWinderOperation = OPERATE_STANDBY; // TODO: Switch OPERATE_CALIBRATING ?
 }
 
 void QiMachineWinder::operateStandby(){
@@ -345,7 +343,7 @@ void QiMachineWinder::adjustSpeed(float speedMetersPerMinute){
             operateUnwind(speedMetersPerMinute);
             break;
         case OPERATE_CALIBRATING:
-            // TODO: Implement
+            // Not implemented as separate mode
             break;
     }
 }
@@ -357,7 +355,6 @@ void QiMachineWinder::adjustOscillationPositions(uint16_t positionStart, uint16_
     _configurationSoft.ferrari_max = positionEnd;
 
     // Adjust current operation if any
-    // TODO: Implement
     switch(_currentWinderOperation){
         case OPERATE_OFF:
         case OPERATE_STANDBY:
@@ -365,11 +362,10 @@ void QiMachineWinder::adjustOscillationPositions(uint16_t positionStart, uint16_
         case OPERATE_PULLING:
             break;
         case OPERATE_WINDING:
-            // TODO: Implement
             _stepperFerrari->adjustMovePositions(positionStart - _configurationHard.motors.ferrariOffset, positionEnd - _configurationHard.motors.ferrariOffset);
             break;
         case OPERATE_CALIBRATING:
-            // TODO: Implement
+            // Not implemented as separate mode
             break;
     }
 }
@@ -384,29 +380,19 @@ void QiMachineWinder::handleStatusReport() {
     // Assemble report message
     StaticJsonDocument<512> doc;
     String json;
-    doc["f"]["r"] = ferrariStatus.rpm;
-    doc["f"]["s"] = ferrariStatus.load;
-    doc["f"]["a"] = _stepperFerrari->getCurrentMode() != OFF;
-    doc["p"]["r"] = pullerStatus.rpm;
-    doc["p"]["s"] = pullerStatus.load;
-    doc["p"]["a"] = _stepperPuller->getCurrentMode() != OFF;
-    doc["s"]["r"] = spoolStatus.rpm;
-    doc["s"]["s"] = spoolStatus.load;
-    doc["s"]["a"] = _stepperSpool->getCurrentMode() != OFF;
-    doc["m"] = machineWinderOperationToString(_currentWinderOperation);
-    doc["e"] = nullptr;
-    doc["w"] = 0; // TODO spoolStatus.rotations;
-    doc["l"] = 0; // TODO ferrariStatus.rotations * hard.motors.ferrari.mm_per_rotation / 1000;
-
-    // TODO: Readd error extraction
-    /*
-    if (!ferrariStatus.error.isEmpty())
-    doc["e"] = ferrariStatus.error;
-    else if (!spoolStatus.error.isEmpty())
-    doc["e"] = spoolStatus.error;
-    else if (!pullerStatus.error.isEmpty())
-    doc["e"] = pullerStatus.error;
-    */
+    doc["f"]["r"] = ferrariStatus.rpm; // Ferrari-rpm
+    doc["f"]["s"] = ferrariStatus.load; // Ferrari-load
+    doc["f"]["a"] = _stepperFerrari->getCurrentMode() != OFF; // Ferrari-active
+    doc["p"]["r"] = pullerStatus.rpm; // Puller-rpm
+    doc["p"]["s"] = pullerStatus.load; // Puller-load
+    doc["p"]["a"] = _stepperPuller->getCurrentMode() != OFF; // Puller-active
+    doc["s"]["r"] = spoolStatus.rpm; // Spool-rpm
+    doc["s"]["s"] = spoolStatus.load; // Spool-load
+    doc["s"]["a"] = _stepperSpool->getCurrentMode() != OFF; // Spool-active
+    doc["m"] = machineWinderOperationToString(_currentWinderOperation); // Current machine-operation
+    doc["e"] = nullptr; // Errors // TODO: Re-implement
+    doc["w"] = 0; // Total windings // TODO spoolStatus.rotations;
+    doc["l"] = 0; // Total wound length // TODO ferrariStatus.rotations * hard.motors.ferrari.mm_per_rotation / 1000;
 
     // Serialise and check message
     if (serializeJson(doc, json) == 0) {
@@ -420,7 +406,7 @@ void QiMachineWinder::handleStatusReport() {
 
 float QiMachineWinder::calculateSpoolToFerrariSpeedRation(){
     const float SPOOL_GEAR_RATIO = 1; // 5.18; // TODO - Comment - hard.motors.spool.gearRatio
-    const float FILAMENT_SIZE = 1.75; // Width of filament in mm, TODO: tested: when winded filament width = 2.1mm theory 1.75mm
+    const float FILAMENT_SIZE = 1.75; // Width of filament in mm
     
     float spoolWidthMm = _configurationSoft.ferrari_max - _configurationSoft.ferrari_min; // Width of spool in mm
     float spoolMotorRotationsPerLayer = spoolWidthMm * SPOOL_GEAR_RATIO / FILAMENT_SIZE; // Number of spool-rotations needed for winding an entire layer of filament
@@ -433,16 +419,6 @@ float QiMachineWinder::calculateSpoolToFerrariSpeedRation(){
 void QiMachineWinder::handleSpeedAdjust(){
     if(_stepperFerrari->getCurrentMode() == OSCILLATING_FORWARD || _stepperFerrari->getCurrentMode() == OSCILLATING_BACKWARD){
         float speedNewRpm = _stepperSpool->getStatus().rpm / calculateSpoolToFerrariSpeedRation();
-        /*
-        float speedNewMpm = speedRpmToMpm(speedNewRpm, _configurationHard.motors.ferrari.mmPerRotation);
-        logPrint(INFO, INFO, "QiMachineWinder::handleSpeedAdjust spoolRpm: %.2f, ratio: %.2f, ferrariRpm: %.2f, newRpm: %.2f, newMpm: %.2f\n",
-            _stepperSpool->getStatus().rpm,
-            calculateSpoolToFerrariSpeedRation(),
-            _stepperFerrari->getStatus().rpm,
-            speedNewRpm,
-            speedNewMpm
-        ); // TODO: DEBUG
-        */
         _stepperFerrari->adjustMoveSpeed(_stepperFerrari->getStatus().rpm < 0 ? min(-speedNewRpm, speedNewRpm) : max(-speedNewRpm, speedNewRpm));
     }
 }
@@ -465,7 +441,7 @@ const char* machineWinderOperationToString(machineWinderOperation_e machineOpera
     return "error";
 }
 
-void QiMachineWinder::executeDebugCommandTodo(char cmd){
+void QiMachineWinder::executeDebugCommand(char cmd){ // TODO: To be removed after debugging
     switch(cmd){
         case 'd': // debug
             _stepperSpool->printStatus(true);

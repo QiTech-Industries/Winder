@@ -33,20 +33,20 @@ void Webserver::socketLoop()
     // ping pong must be implemented to prevent too many messages in queue after network change
 }
 
-bool Webserver::getMessage(void *arg, uint8_t *data, size_t len)
+bool Webserver::fetchMessage(void *arg, uint8_t *data, size_t len)
 {
     AwsFrameInfo *info = (AwsFrameInfo *)arg;
 
     if (info->opcode != WS_TEXT)
     {
-        DEBUG_PRINTLN("Binary Messages are not supported."); // TODO: Debugging / Logging
+        DEBUG_PRINTLN("Binary Messages are not supported.");
         return false;
     }
     if (info->index == 0)
-        request = {};
+        requestBuffer = {};
 
     data[len] = 0;
-    request.json += (char *)data;
+    requestBuffer.json += (char *)data;
 
     // return if first and only frame or last frame of multi frame message
     // TODO: What is the point of that check if the return value will be true either way?
@@ -71,7 +71,7 @@ Webserver::Webserver() : dnsTimer(this, &Webserver::dnsLoop), socketTimer(this, 
 
 void Webserver::create(uint16_t port, const char *defaultFile, const char *hostname, const char *friendly_name)
 {
-    DEBUG_PRINTLN("[Server] Webserver started."); // TODO: Debug/Logging
+    DEBUG_PRINTLN("[Server] Webserver started.");
     webServer = new AsyncWebServer(port);
     webServer->serveStatic("/", LITTLEFS, "/")
         .setDefaultFile(defaultFile)
@@ -84,7 +84,7 @@ void Webserver::create(uint16_t port, const char *defaultFile, const char *hostn
                             { request->redirect(String("http://") + hostname + ".local"); });
 
     webServer->begin();
-    DEBUG_PRINTLN(String("[Server] Available under http://") + hostname + ".local"); // TODO: Debug/Logging
+    DEBUG_PRINTLN(String("[Server] Available under http://") + hostname + ".local");
 
     // create MDNS
     if (!MDNS.begin(hostname))
@@ -130,12 +130,12 @@ void Webserver::createSocket(String path)
                                 break;
                             case WS_EVT_DATA:
                                 // Date received, try to read json and read event-identifier from message
-                                if (!getMessage(arg, data, len))
+                                if (!fetchMessage(arg, data, len))
                                     return;
 
                                 // Read and check json for validity
                                 StaticJsonDocument<512> doc;
-                                DeserializationError error = deserializeJson(doc, request.json);
+                                DeserializationError error = deserializeJson(doc, requestBuffer.json);
                                 if (error) {
                                     DEBUG_PRINTLN("[Server] JSON could not be decoded.");
                                 }
@@ -145,21 +145,20 @@ void Webserver::createSocket(String path)
                                 // TODO: abort on error?
                                 
                                 // Extract data from deserialized json
-                                DEBUG_PRINTLN("[Server]" + request.json);
-                                request.event = doc["event"].as<String>();
-                                request.data = doc["data"];
-                                event = request.event;
+                                DEBUG_PRINTLN("[Server]" + requestBuffer.json);
+                                requestBuffer.event = doc["event"].as<String>();
+                                requestBuffer.data = doc["data"];
+                                event = requestBuffer.event;
                                 break;
                             }
 
-                            //Check JSON queue for events with matching event-identifier
+                            // Check JSON queue for events with matching event-identifier
                             // Send the json-converted answer of the called function back to the client via websocket
-                            for (auto i = queueJson.begin(); i != queueJson.end(); i++)
-                            {
+                            for (auto i = commandQueueJson.begin(); i != commandQueueJson.end(); i++) {
                                 if (i->event != event || !i->cb)
                                     continue;
 
-                                String data = i->cb(request.data);
+                                String data = i->cb(requestBuffer.data);
                                 if (data == __null)
                                     return;
                                 client->text(constructMessage(event, data));
@@ -168,8 +167,7 @@ void Webserver::createSocket(String path)
 
                             // Check queue for callbacks with matching event-identifier
                             // Send the answer of the called function back to the client via websocket
-                            for (auto i = queue.begin(); i != queue.end(); i++)
-                            {
+                            for (auto i = commandQueueString.begin(); i != commandQueueString.end(); i++) {
                                 if (i->event != event || !i->cb)
                                     continue;
 
@@ -185,12 +183,12 @@ void Webserver::createSocket(String path)
 
 void Webserver::on(String event, std::function<String()> cb)
 {
-    queue.push_back({event, cb});
+    commandQueueString.push_back({event, cb});
 }
 
 void Webserver::on(String event, std::function<String(JsonObject message)> cb)
 {
-    queueJson.push_back({event, cb});
+    commandQueueJson.push_back({event, cb});
 }
 
 void Webserver::emit(String event, String data)

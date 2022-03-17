@@ -18,7 +18,6 @@ enum wifiConnectionMode_e {
     ONLINE, // Active connection established
 };
 
-
 class QiMachineWinder;
 
 /**
@@ -44,7 +43,7 @@ private:
     void changeMode(wifiConnectionMode_e newMode);
 
     /**
-     * @brief Get software configuration of machine, TODO: Helper function for transition away from global variables
+     * @brief Get software configuration of machine
      */
     configurationWifi_s& getConfiguration();
 
@@ -64,7 +63,7 @@ public:
     /**
      * @brief Setter method for callback for connection Change
      */
-    void setConnectionChangeCallback(std::function<void()> newCallBack); // TODO: Rename to setConnectionChangeCallback() / setCb()...
+    void setConnectionChangeCallback(std::function<void()> newCallBack);
 
     /**
      * @brief Connect to Wifi Network

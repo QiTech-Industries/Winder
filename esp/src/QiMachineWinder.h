@@ -23,10 +23,10 @@ enum machineWinderOperation_e{
 };
 
 /**
- * @brief TODO - Comment
+ * @brief Converts an operation-identifier into its text-representation
  * 
- * @param machineOperation TODO - Comment
- * @return TODO - Comment
+ * @param machineOperation operation to be converted
+ * @return "error" on error, representation otherwise
  */
 const char* machineWinderOperationToString(machineWinderOperation_e machineOperation);
 
@@ -44,7 +44,7 @@ uint32_t speedRpmToMpm(float speedRpm, float mmPerRotation);
  */
 class QiMachineWinder{
     private:
-        const float MAX_SPEED_MPM = 100; // Maximum rotation speed in meters per minute (depending on the spool-diameter), <= 0 if none -> TODO: Adjust to realistic limit
+        const float MAX_SPEED_MPM = 100; // Maximum rotation speed in meters per minute (depending on the spool-diameter), <= 0 if none - TODO: Adjust to realistic limit
 
         // General configuration
         configurationMachineWinderSoftware_s _configurationSoft;
@@ -57,7 +57,7 @@ class QiMachineWinder{
 
         // Hardware
         // TODO: Reconsider whether to use as pointers or references, adjusting deconstructor accordingly
-        FastAccelStepperEngine* _engine; // Engine used for initialisation and coordination of motors - TODO: Set by parameter and create externally
+        FastAccelStepperEngine* _engine; // Engine used for initialisation and coordination of motors - TODO: Set by parameter and create externally?
         Stepper* _stepperSpool; // Motor used for turning the spool for spooling the filament with a load-adjusted even strength
         Stepper* _stepperFerrari; // Motor used for positioning of the filament on the spool
         Stepper* _stepperPuller; // Motor used for pulling the filament
@@ -72,7 +72,6 @@ class QiMachineWinder{
 
         /**
          * @brief Nonfunctional output of a logo on the debugging console
-         * TODO: Move elsewhere?
          */
         void printBanner();
 
@@ -173,8 +172,12 @@ class QiMachineWinder{
          */
         void handleSpeedAdjust();
 
-        // TODO - debug
-        void executeDebugCommandTodo(char cmd);
+        /**
+         * @brief Helper-method for interactive debugging
+         * 
+         * @param cmd command-id, which equals the corresponding key having been pressed
+         */
+        void executeDebugCommand(char cmd);
 
         // Getter-Method
         machineWinderOperation_e getCurrentMode();

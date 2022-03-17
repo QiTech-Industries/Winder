@@ -94,11 +94,13 @@ void setup()
 }
 
 void loop() {
-    // TODO: Debug
+    // Interactive key-input based debugging
+    /*
     if(Serial.available() > 0){
         uint8_t newCommand = Serial.read();
-        JarvisWinder.executeDebugCommandTodo(newCommand);
+        JarvisWinder.executeDebugCommand(newCommand);
     }
+    */
 
     JarvisWinder.handle();
 }

@@ -15,12 +15,12 @@
  */
 class Webserver{
     private:
-        struct request_s // TODO - Comment
+        struct request_s
         {
             String event; // Identifier of the event-type
-            JsonObject data; // TODO - Comment
-            String json; // TODO - Comment, TODO: char* instead of String?
-        };
+            JsonObject data; // Parsed data of request
+            String json; // Raw json-string
+        }; // Client-request / -"command"
 
         struct queueJson_s // Listener for json-messages of a specific event-type
         {
@@ -36,12 +36,12 @@ class Webserver{
 
         TimerForMethods<Webserver> dnsTimer; // Timer for looping the dns-related code
         TimerForMethods<Webserver> socketTimer; // Timer for looping the socket-related code
-        AsyncWebServer *webServer = NULL; // TODO - Comment
-        AsyncWebSocket *webSocket = NULL; // TODO - Comment
+        AsyncWebServer *webServer = NULL; // Handles incoming client-requests
+        AsyncWebSocket *webSocket = NULL; // Handles incoming websockets of client
         DNSServer *dnsServer = NULL; // DNS server for handeling name resolution within the created access point
-        request_s request; // Buffer-variable for handeling incoming requests from the client // TODO: Check comment
-        std::vector<queue_s> queue; // Listeners waiting to handle incoming client-messages // TODO: Rename to be more intuitive
-        std::vector<queueJson_s> queueJson; // Listeners waiting to handle incoming client-messages that are formatted as json // TODO: Rename to be more intuitive
+        request_s requestBuffer; // Buffer-variable for handeling incoming requests from the client
+        std::vector<queue_s> commandQueueString; // Queue for incoming string-based client-commands
+        std::vector<queueJson_s> commandQueueJson; // Queue for incoming json-based client-commands
         
         /**
          * @brief Main loop for handeling the dns, called by respective timer
@@ -54,7 +54,7 @@ class Webserver{
         void socketLoop();
 
         /**
-         * @brief Get next part of a message that is assumed to be in json-format and add it to the request.json (creating a new one for new messages) TODO: Check comment, also rename as it isn't a simple getter?
+         * @brief Get next part of a message that is assumed to be in json-format and add it to the request.json (creating a new one for new messages)
          * 
          * @param arg Pointer to the messageframe, that will be casted to AwsFrameInfo
          * @param data message-content
@@ -62,7 +62,7 @@ class Webserver{
          * @return true data extracted
          * @return false error occurred (binary message)
          */
-        bool getMessage(void *arg, uint8_t *data, size_t len);
+        bool fetchMessage(void *arg, uint8_t *data, size_t len);
 
         /**
          * @brief Combines the parameters into a message ready to be sent to the client via websocket
@@ -80,12 +80,12 @@ class Webserver{
         Webserver();
 
         /**
-         * @brief Creates and starts the webserver, making it available over the network. TODO: Either rename to init() or move to constructor?
+         * @brief Creates and starts the webserver, making it available over the network
          * 
          * @param port port the webserver shall run on
          * @param defaultFile path of the default file relative to the LITTLEFS root-directory
          * @param hostname hostname to make the webserver available under
-         * @param friendly_name TODO: Comment
+         * @param friendly_name name of accesspoint that is visible to the user (on a wifi-list for example)
          */
         void create(uint16_t port, const char *defaultFile, const char *hostname, const char *friendly_name);
 

@@ -19,13 +19,13 @@ class QiUpdater
 {
 private:
     QiMachineWinder& _machine; // Reference to the machine we manage the wifi for, needed for requesting the configuration
-    const String overTheAirURL = "http://update.qitech.de/"; // Url to check for updates // TODO: String and potentially setting externally (setup struct or in hard configuration?)
+    const String overTheAirURL = "http://update.qitech.de/"; // Url to check for updates
     const char *headerKeys[4] = {"X-Update", "X-Build", "X-Version", "date"}; // HTTP-Headers needed for extract the headers, needs to be an array, since it is used as a parameter for the http-client
     TimerForMethods<QiUpdater> timer; // Timer for main looping of handeling
     HTTPClient http; // Client for requesting data over the network
 
     /**
-     * @brief Get software configuration of machine, TODO: Helper function for transition away from global variables
+     * @brief Get software configuration of machine
      */
     configurationMachineWinderSoftware_s& getConfiguration();
 

@@ -18,7 +18,7 @@
 #endif
 
 void WinderWifi::changeMode(wifiConnectionMode_e newMode) {
-    _connectionMode = newMode; // TODO: Remove access on global var
+    _connectionMode = newMode;
     if (_connectionChangeCallback) _connectionChangeCallback();
 };
 
@@ -31,7 +31,7 @@ void WinderWifi::start(){
 }
 
 configurationWifi_s& WinderWifi::getConfiguration(){
-    return _machine.getConfigurationSoft().wifi; // TODO: replace with non-global code
+    return _machine.getConfigurationSoft().wifi;
 }
 
 void WinderWifi::setConnectionChangeCallback(std::function<void()> newCallBack) {
