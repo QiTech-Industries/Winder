@@ -24,4 +24,4 @@ A clear and concise description of what you expected to happen.
 A clear and concise description of what actually happened.
 
 **Screenshots / Logs**
-If applicable, add resources to help explain your problem.
+Required for **every** FN and UI problem. The developer should be able to get a clear idea of the issue without having to test on the machine.
