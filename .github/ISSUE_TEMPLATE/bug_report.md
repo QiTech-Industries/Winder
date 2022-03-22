@@ -20,5 +20,8 @@ Steps to reproduce the behavior:
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
+**Actual behavior**
+A clear and concise description of what actually happened.
+
 **Screenshots / Logs**
-If applicable, add ressources to help explain your problem.
+If applicable, add resources to help explain your problem.
