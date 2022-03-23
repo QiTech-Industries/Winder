@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef } from "preact/hooks"
 import Number from "./Number"
 
+/**
+ * Slider-Input combo for the speed-input (in meters per minute)
+ * Used in Control-view
+ * @param {*} props TODO: Comment
+ */
 const Range = (props) => {
 
     const minRange = props.min;

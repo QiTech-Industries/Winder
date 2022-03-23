@@ -58,6 +58,10 @@ const Winder = () => {
         }
     ];
 
+    /**
+     * 
+     * @param {Number} mpm puller-speed in meters per minute
+     */
     const changeSpeed = (mpm) => {
         socket.emit("speed", { mpm });
         setSpeed(mpm);
