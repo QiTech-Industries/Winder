@@ -16,6 +16,8 @@ const config = {
                 yAxisID: 'y',
                 pointRadius: 0,
             },
+            /*
+            // TODO: Implement load-display
             {
                 data: [],
                 borderColor: [
@@ -26,6 +28,7 @@ const config = {
                 pointRadius: 0,
                 pointHitRadius: 0
             },
+            */
         ]
     },
     options: {
@@ -43,12 +46,15 @@ const config = {
                 position: 'left',
                 title: {
                     display: true,
-                    text: 'RPS'
+                    text: 'RPM'
                 },
             },
+            /*
+            // TODO: Implement load-display
+            */
             y1: {
                 type: 'linear',
-                display: true,
+                display: false,
                 position: 'right',
                 title: {
                     display: true,
@@ -66,6 +72,10 @@ const config = {
     },
 };
 
+/**
+ * Display of motor-related data (like rotations) on a chart
+ * Used by Stepper
+ */
 const Chart = ({ data }) => {
     const chartContainer = useRef(null);
     const [chartInstance, setChartInstance] = useState(null);
