@@ -111,7 +111,7 @@ void QiMachineWinder::init(configurationMachineWinder_s conf){
 
                 // Execute command
                 if(_currentWinderOperation == OPERATE_STANDBY || _currentWinderOperation == OPERATE_OFF){
-                    // Nothing to do, lets immediately move to the new position to make calibration easier
+                    // Currently idleing, lets immediately move to the new position to make calibration easier
                     operateCalibrate(newPositionValue);
                     if(newPositionIsStart){
                         _configurationSoft.ferrari_min = newPositionValue;
@@ -119,6 +119,7 @@ void QiMachineWinder::init(configurationMachineWinder_s conf){
                         _configurationSoft.ferrari_max = newPositionValue;
                     }
                 } else {
+                    // Currently moving, adjust positions smoothly to avoid interruption of ferrari-movement
                     if(newPositionIsStart){
                         adjustOscillationPositions(_configurationSoft.ferrari_max, newPositionValue);
                     } else {
@@ -251,7 +252,12 @@ void QiMachineWinder::handle(){
 void QiMachineWinder::operatePull(float speedMetersPerMinute){
     const float FERRARI_POSITIONING_SPEED = 100;
     float speedRpm = speedMetersPerMinute * 1000 / _configurationHard.motors.puller.mmPerRotation;
-    logPrint(INFO, INFO, "QiMachineWinder::operatePull speedMpm: %.2f, speedRpm: %.2f, ferrariPos: %d\n", speedMetersPerMinute, speedRpm, _configurationSoft.ferrari_min); // TODO: DEBUG
+    logPrint(INFO, INFO, "QiMachineWinder::operatePull speedMpm: %.2f, speedRpm: %.2f, oscillation: {start: %d, end: %d, offset: %d}\n",
+        speedMetersPerMinute,
+        speedRpm,
+        _configurationSoft.ferrari_min,
+        _configurationSoft.ferrari_max,
+        _configurationHard.motors.ferrariOffset); // TODO: DEBUG
     
     // Rotate puller, disable spool, position ferrari at start position for following winding
     _stepperSpool->switchModeOff();
@@ -351,8 +357,8 @@ void QiMachineWinder::adjustSpeed(float speedMetersPerMinute){
 void QiMachineWinder::adjustOscillationPositions(uint16_t positionStart, uint16_t positionEnd){
     logPrint(INFO, INFO, "QiMachineWinder::adjustOscillationPositions\n"); // TODO: DEBUG
     // Save new positions to config
-    _configurationSoft.ferrari_min = positionStart;
-    _configurationSoft.ferrari_max = positionEnd;
+    _configurationSoft.ferrari_min = (positionStart < positionEnd) ? positionStart : positionEnd;
+    _configurationSoft.ferrari_max = (positionStart < positionEnd) ? positionEnd : positionStart;
 
     // Adjust current operation if any
     switch(_currentWinderOperation){
@@ -360,12 +366,11 @@ void QiMachineWinder::adjustOscillationPositions(uint16_t positionStart, uint16_
         case OPERATE_STANDBY:
         case OPERATE_UNWINDING:
         case OPERATE_PULLING:
+        case OPERATE_CALIBRATING:
+            // Not calibrating anyways
             break;
         case OPERATE_WINDING:
             _stepperFerrari->adjustMovePositions(positionStart - _configurationHard.motors.ferrariOffset, positionEnd - _configurationHard.motors.ferrariOffset);
-            break;
-        case OPERATE_CALIBRATING:
-            // Not implemented as separate mode
             break;
     }
 }

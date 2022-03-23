@@ -61,7 +61,7 @@ void setup()
                         .cs = 5,
                     }
                 },
-                .ferrariOffset = 11
+                .ferrariOffset = 0 // 0 for old ferrari, 11-ish for new ferrari
             },
             .server = {
                 .port = 80,
