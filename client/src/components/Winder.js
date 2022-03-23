@@ -6,6 +6,9 @@ import { useSocket } from '../utils/SocketProvider';
 import { useStats } from "../utils/StatsProvider";
 import Slider from "./Slider"
 
+/**
+ * Page of the control-view
+ */
 const Winder = () => {
     const [speed, setSpeed] = useState(3);
     
@@ -14,7 +17,7 @@ const Winder = () => {
 
     const menu = [
         {
-            name: "Start Puller",
+            name: "Start Pulling",
             action: () => socket.emit("pull", { mpm: speed }),
             active: mode != "pulling" && mode != "winding" && mode != "changing"
         },
@@ -24,7 +27,7 @@ const Winder = () => {
             active: mode == "pulling" || mode == "changing"
         },
         {
-            name: "Winding",
+            name: "Stop Winding",
             action: () => socket.emit("power"),
             active: mode == "winding"
         },
@@ -34,22 +37,22 @@ const Winder = () => {
             active: mode == "winding"
         },
         {
-            name: "Unwind",
+            name: "Start Unwinding",
             action: () => socket.emit("unwind", { mpm: speed }),
             active: mode != "unwinding"
         },
         {
-            name: "Unwinding",
+            name: "Stop Unwinding",
             action: () => socket.emit("power"),
             active: mode == "unwinding"
         },
         {
-            name: "Off",
+            name: "Turn Off",
             action: () => socket.emit("standby"),
             active: mode != "standby"
         },
         {
-            name: "Power",
+            name: "Turn On",
             action: () => socket.emit("power"),
             active: mode == "standby"
         }
