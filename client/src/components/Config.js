@@ -23,11 +23,12 @@ const Config = () => {
      */
     const calibrate = (position, startPos) => {
         const newConfig = {...config};
+
         if(startPos){
-            newConfig.wifi.ferrari_min = position;
+            newConfig.ferrari_min = position;
         }
         else{
-            newConfig.wifi.ferrari_max = position;
+            newConfig.ferrari_max = position;
         }
         setConfig(newConfig);
         socket.emit("calibrate", { position, startPos }, () => {

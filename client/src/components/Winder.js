@@ -1,7 +1,7 @@
 import Button from "./Button"
 import Stepper from "./Stepper"
 import Spool from "./Spool"
-import { useState } from "preact/hooks"
+import { useEffect, useState, useRef } from "preact/hooks"
 import { useSocket } from '../utils/SocketProvider';
 import { useStats } from "../utils/StatsProvider";
 import Slider from "./Slider"
@@ -9,8 +9,24 @@ import Slider from "./Slider"
 /**
  * Page of the control-view
  */
-const Winder = () => {
+const Winder = (props) => {
     const [speed, setSpeed] = useState(3);
+    const speedDebounceTimeout = useRef(); // Used for debouncing the speed-slider
+
+    // Add persistence for speed using local Storage to avoid loss on router-related view-change
+    const LOCAL_STORAGE_KEY_OPERATION_SPEED = 'JarvisWinderOperationSpeed';
+    const DEFAULT_OPERATION_SPEED = 3; // Default operation speed in meters per minute
+    useEffect(() => {
+        var oldSpeed = DEFAULT_OPERATION_SPEED;
+        var localStorageValue = window.localStorage.getItem(LOCAL_STORAGE_KEY_OPERATION_SPEED);
+        if(localStorageValue !== null && !isNaN(localStorageValue)){
+            oldSpeed = parseFloat(localStorageValue);
+        }
+        setSpeed(oldSpeed);
+    }, []);
+    useEffect(() => {
+        window.localStorage.setItem(LOCAL_STORAGE_KEY_OPERATION_SPEED, speed);
+    }, [speed]);
     
     const { socket } = useSocket();
     const mode = useStats(state => state.stats.m)
@@ -59,12 +75,20 @@ const Winder = () => {
     ];
 
     /**
-     * 
+     * Notify server about speedchange in a debounced manner to avoid flooding it with changes
      * @param {Number} mpm puller-speed in meters per minute
      */
     const changeSpeed = (mpm) => {
-        socket.emit("speed", { mpm });
-        setSpeed(mpm);
+        setSpeed(parseFloat(mpm));
+
+        clearTimeout(speedDebounceTimeout.current);
+        if(speedDebounceTimeout.timeout != null){
+            clearTimeout(speedDebounceTimeout.current);
+        }
+        speedDebounceTimeout.current = (setTimeout(value => {
+            socket.emit("speed", { mpm });
+            speedDebounceTimeout.current = null;
+        }, 500, mpm));
     }
 
     return (
