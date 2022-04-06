@@ -65,6 +65,7 @@ void QiMachineWinder::init(configurationMachineWinder_s conf){
     _stepperSpool->init();
     _stepperFerrari->init();
     _stepperPuller->init();
+    _stepperFerrari->setHomingSpeed(120);
     _stepperSpool->setDebuggingLevel(ERROR);
     _stepperFerrari->setDebuggingLevel(ERROR);
     _stepperPuller->setDebuggingLevel(ERROR);
@@ -250,7 +251,6 @@ void QiMachineWinder::handle(){
 }
 
 void QiMachineWinder::operatePull(float speedMetersPerMinute){
-    const float FERRARI_POSITIONING_SPEED = 100;
     float speedRpm = speedMetersPerMinute * 1000 / _configurationHard.motors.puller.mmPerRotation;
     logPrint(INFO, INFO, "QiMachineWinder::operatePull speedMpm: %.2f, speedRpm: %.2f, oscillation: {start: %d, end: %d, offset: %d}\n",
         speedMetersPerMinute,
@@ -272,7 +272,6 @@ void QiMachineWinder::operatePull(float speedMetersPerMinute){
 }
 
 void QiMachineWinder::operateUnwind(float speedMetersPerMinute){
-    const float FERRARI_POSITIONING_SPEED = 100;
     logPrint(INFO, INFO, "QiMachineWinder::operateUnwind\n"); // TODO: DEBUG
     float speedRpm = speedMetersPerMinute * 1000 / _configurationHard.motors.puller.mmPerRotation;
     
@@ -306,7 +305,6 @@ void QiMachineWinder::operateWind(float speedMetersPerMinute){
 }
 
 void QiMachineWinder::operateCalibrate(uint16_t calibrationPosition){
-    const float FERRARI_POSITIONING_SPEED = 100;
     logPrint(INFO, INFO, "QiMachineWinder::operateCalibrate\n"); // TODO: DEBUG
     _stepperSpool->switchModeStandby();
     _stepperFerrari->movePosition(-FERRARI_POSITIONING_SPEED, calibrationPosition);
