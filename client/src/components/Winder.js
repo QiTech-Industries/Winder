@@ -1,39 +1,20 @@
 import Button from "./Button"
 import Stepper from "./Stepper"
 import Spool from "./Spool"
-import { useEffect, useState, useRef } from "preact/hooks"
+import { useState } from "preact/hooks"
 import { useSocket } from '../utils/SocketProvider';
 import { useStats } from "../utils/StatsProvider";
 import Slider from "./Slider"
 
-/**
- * Page of the control-view
- */
-const Winder = (props) => {
+const Winder = () => {
     const [speed, setSpeed] = useState(3);
-    const speedDebounceTimeout = useRef(); // Used for debouncing the speed-slider
-
-    // Add persistence for speed using local Storage to avoid loss on router-related view-change
-    const LOCAL_STORAGE_KEY_OPERATION_SPEED = 'JarvisWinderOperationSpeed';
-    const DEFAULT_OPERATION_SPEED = 3; // Default operation speed in meters per minute
-    useEffect(() => {
-        var oldSpeed = DEFAULT_OPERATION_SPEED;
-        var localStorageValue = window.localStorage.getItem(LOCAL_STORAGE_KEY_OPERATION_SPEED);
-        if(localStorageValue !== null && !isNaN(localStorageValue)){
-            oldSpeed = parseFloat(localStorageValue);
-        }
-        setSpeed(oldSpeed);
-    }, []);
-    useEffect(() => {
-        window.localStorage.setItem(LOCAL_STORAGE_KEY_OPERATION_SPEED, speed);
-    }, [speed]);
     
     const { socket } = useSocket();
     const mode = useStats(state => state.stats.m)
 
     const menu = [
         {
-            name: "Start Pulling",
+            name: "Start Puller",
             action: () => socket.emit("pull", { mpm: speed }),
             active: mode != "pulling" && mode != "winding" && mode != "changing"
         },
@@ -43,7 +24,7 @@ const Winder = (props) => {
             active: mode == "pulling" || mode == "changing"
         },
         {
-            name: "Stop Winding",
+            name: "Winding",
             action: () => socket.emit("power"),
             active: mode == "winding"
         },
@@ -53,42 +34,30 @@ const Winder = (props) => {
             active: mode == "winding"
         },
         {
-            name: "Start Unwinding",
+            name: "Unwind",
             action: () => socket.emit("unwind", { mpm: speed }),
             active: mode != "unwinding"
         },
         {
-            name: "Stop Unwinding",
+            name: "Unwinding",
             action: () => socket.emit("power"),
             active: mode == "unwinding"
         },
         {
-            name: "Turn Off",
+            name: "Off",
             action: () => socket.emit("standby"),
             active: mode != "standby"
         },
         {
-            name: "Turn On",
+            name: "Power",
             action: () => socket.emit("power"),
             active: mode == "standby"
         }
     ];
 
-    /**
-     * Notify server about speedchange in a debounced manner to avoid flooding it with changes
-     * @param {Number} mpm puller-speed in meters per minute
-     */
     const changeSpeed = (mpm) => {
-        setSpeed(parseFloat(mpm));
-
-        clearTimeout(speedDebounceTimeout.current);
-        if(speedDebounceTimeout.timeout != null){
-            clearTimeout(speedDebounceTimeout.current);
-        }
-        speedDebounceTimeout.current = (setTimeout(value => {
-            socket.emit("speed", { mpm });
-            speedDebounceTimeout.current = null;
-        }, 500, mpm));
+        socket.emit("speed", { mpm });
+        setSpeed(mpm);
     }
 
     return (

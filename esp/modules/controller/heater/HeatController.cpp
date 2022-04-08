@@ -117,12 +117,41 @@ void HeatController::handle(){
     }
 }
 
+bool HeatController::isDigitalPinValid(uint8_t pin){
+    switch(pin){
+        // SPI-pins
+            case 18:
+            case 19:
+            case 23:
+            case 05:
+        // Digital pins
+            case 13:
+            case 12:
+            case 14:
+            case 27:
+            case 16:
+            case 17:
+            case 25:
+            case 26:
+                return true;
+        // Analog pins:
+            case 2:
+            case 4:
+            case 36:
+            case 34:
+            case 38:
+            case 39:
+            default:
+                return false;
+    }
+}
+
 void HeatController::init(){
     _controllerState = INVALID;
-    if(!_mcValidator.isDigitalPinValid(_config.pinHeat)) return;
-    if(!_mcValidator.isDigitalPinValid(_config.pinSensorSo)) return;
-    if(!_mcValidator.isDigitalPinValid(_config.pinSensorCs)) return;
-    if(!_mcValidator.isDigitalPinValid(_config.pinSensorSck)) return;
+    if(!isDigitalPinValid(_config.pinHeat)) return;
+    if(!isDigitalPinValid(_config.pinSensorSo)) return;
+    if(!isDigitalPinValid(_config.pinSensorCs)) return;
+    if(!isDigitalPinValid(_config.pinSensorSck)) return;
     pinMode(_config.pinHeat, OUTPUT);
     pinMode(_config.pinSensorCs, OUTPUT);
     pinMode(_config.pinSensorSo, INPUT);
