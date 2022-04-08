@@ -1,5 +1,8 @@
 import { useModal } from "../utils/ModalProvider";
 
+/**
+ * Display for messages to the user, that need to be closed by the user (such as the changelog)
+ */
 const Modal = () => {
     const modal = useModal();
 

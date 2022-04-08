@@ -1,5 +1,8 @@
 import { useToast } from '../utils/ToastProvider';
 
+/**
+ * Display for messages (error / success / warning) to the user, that will disappear after automatically after a short time
+ */
 const Toast = () => {
     const [toast] = useToast(state => [state.toast]);
     return (
