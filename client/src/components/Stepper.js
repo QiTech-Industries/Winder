@@ -2,11 +2,6 @@ import { useState } from "preact/hooks"
 import Chart from "./Chart";
 import { useStats } from "../utils/StatsProvider";
 
-/**
- * Displays the current state or chart of speed of a stepper motor
- * @param name Name of the motor to be displayed as a title
- * @param state State of the motor
- */
 const Stepper = ({ name, state }) => {
     const [showDiagram, setShowDiagram] = useState(false);
     const stats = useStats(state => state.stats)

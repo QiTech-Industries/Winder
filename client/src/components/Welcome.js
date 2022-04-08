@@ -1,9 +1,6 @@
 import { useModal } from "../utils/ModalProvider";
 import Changelog from "./Changelog";
 
-/**
- * Page of the main view
- */
 const Welcome = () => {
     const modal = useModal();
 
@@ -30,7 +27,7 @@ const Welcome = () => {
                 </div>
                 <div class="flex space-x-2 items-center">
                     <p class="hidden md:block">A product by</p>
-                    <a href="https://www.qitech.de"><img src="/assets/logo.svg" class="h-12" /></a>
+                    <img src="/assets/logo.svg" class="h-12" />
                 </div>
             </div>
         </>

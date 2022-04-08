@@ -1,11 +1,6 @@
 import { useState, useEffect, useRef } from "preact/hooks"
 import Number from "./Number"
 
-/**
- * Slider-input combo for calibration input (start- and endposition for ferrari-oscillation)
- * Used in configure-view
- * @param {*} props TODO: Comment
- */
 const Range = (props) => {
 
     const minSpan = props.span;

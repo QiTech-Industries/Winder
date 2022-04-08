@@ -6,9 +6,6 @@ import { useEffect } from "preact/hooks"
 import { useSocket } from '../utils/SocketProvider';
 import { useToast } from '../utils/ToastProvider'
 
-/**
- * Page of the connect-view
- */
 const Wifi = () => {
     const [networks, setNetworks] = useState([]);
     const [loading, setLoading] = useState(true);
