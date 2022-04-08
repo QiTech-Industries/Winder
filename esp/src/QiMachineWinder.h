@@ -44,6 +44,7 @@ uint32_t speedRpmToMpm(float speedRpm, float mmPerRotation);
  */
 class QiMachineWinder{
     private:
+        const float FERRARI_POSITIONING_SPEED = 200;  // Positioning speed of the ferrari in rotations per minute
         const float MAX_SPEED_MPM = 100; // Maximum rotation speed in meters per minute (depending on the spool-diameter), <= 0 if none - TODO: Adjust to realistic limit
 
         // General configuration
