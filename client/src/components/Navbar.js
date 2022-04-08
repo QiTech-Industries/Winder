@@ -6,6 +6,9 @@ const links = [
     { text: "Configure", to: "/configure" },
 ];
 
+/**
+ * Top navigation bar
+ */
 const Navbar = () => {
     return (
         <div class="flex flex-col">

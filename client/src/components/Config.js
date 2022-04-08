@@ -8,24 +8,38 @@ import { useConfig } from "../utils/ConfigProvider"
 import { useSocket } from "../utils/SocketProvider"
 import { useToast } from "../utils/ToastProvider"
 
+/**
+ * Page of the configure-view
+ */
 const Config = () => {
     const { config, setConfig } = useConfig();
     const { socket } = useSocket();
     const addToast = useToast(state => state.addToast)
 
+    /**
+     * Sends a message to the backend to save / apply the new calibration-position
+     * @param {Integer} position new position (distance from home in mm)
+     * @param {Boolean} startPos true = start-position(left), false = end-position(right)
+     */
     const calibrate = (position, startPos) => {
         const newConfig = {...config};
+
         if(startPos){
-            newConfig.wifi.ferrari_min = position;
+            newConfig.ferrari_min = position;
         }
         else{
-            newConfig.wifi.ferrari_max = position;
+            newConfig.ferrari_max = position;
         }
         setConfig(newConfig);
         socket.emit("calibrate", { position, startPos }, () => {
         });
     }
 
+    /**
+     * Sends a message to the backend to save / apply the new wifi-configuration (for creating an accesspoint)
+     * @param {*} key TODO: Comment
+     * @param {*} val TODO: Comment
+     */
     const updateWifi = (key, val) => {
         const newConfig = {...config};
         newConfig.wifi[key] = val;
