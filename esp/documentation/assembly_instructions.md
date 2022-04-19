@@ -3,8 +3,8 @@ A step-by-step guide for assembling and testing the winder and its components.
 
 # General notes on 3D-printing parts
 **TODO: Document better?**
-- Use black high-quality PLA (**TODO: document settings for printer**)
-- Remove fine plastic-strings with a lighter to make it look cleaner, avoiding actual heating of the printed part as much as possible
+- Use black high-quality PLA (**TODO: document settings for printer?**)
+- Burn off fine plastic-strings with a lighter to make it look cleaner, avoiding actual heating of the printed part as much as possible
 - Check for printing-errors that could cause the component to break upon use
 - Some holes are very tight and need to be heated for assembly, such as inserting a ball-bearing
 
@@ -23,7 +23,7 @@ A step-by-step guide for assembling and testing the winder and its components.
     1. **TODO**
 - Test / Quality assurance
     1. **TODO**
-## Puller
+## Puller-frame
 - Parts
     - **TODO**
 - Assembly
@@ -60,11 +60,14 @@ A step-by-step guide for assembling and testing the winder and its components.
     1. **TODO**
 ## Rubber Feet
 - Parts
-    - **TODO**
+    - 4x Rubber feet
+    - 4x M4x8 (**TODO: Check**) screw
+    - 4x M4-frame-nuts
 - Assembly
-    1. **TODO**
+    1. Put screws through rubber feet
+    2. Screw them on the corners of the frame's bottom side
 - Test / Quality assurance
-    1. **TODO**
+    1. Check firm assembly by trying to move the feet
 ## Laser-Holder
 - Parts
     - **TODO**
@@ -158,7 +161,7 @@ Microcontroller, which is the core of our winder
     - Broken stepdown, **TODO: describe**
     - No upload, **TODO: describe**
 
-## Final assembly
+# Final assembly
 **TODO: Document**
 1. Install the assembled puller-frame
 2. Install the assembled ferrari and ferrari-frame
