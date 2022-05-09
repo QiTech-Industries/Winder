@@ -19,7 +19,7 @@ A step-by-step guide for assembling and testing the winder and its components.
     - 2x Kurzes Rahmenstück (Doppel-Aluprofil mit Länge ???)
     - 8x Einschiebewinkel mit je 2 Madenschrauben (Länge ???)
     - 4x Gummifüße
-    - 4x M4-Linsenkopfschrauben mit Nutensteinen (Länge ???)
+    - 4x M5-Linsenkopfschrauben mit Nutensteinen (Länge ???)
 - Werkzeug
     - M3-Schrauber
     - M4-Schrauber
@@ -56,7 +56,7 @@ A step-by-step guide for assembling and testing the winder and its components.
 	- 1x 2x1 Endkappe mit 2 Stiften
 	- 1x 2x2 Endkappe mit 4 Stiften
 	- Außenwinkel (Richtiger Name?)
-	- 2x M4-Linsenkopfschrauben (Länge ???)
+	- 2x M5-Linsenkopfschrauben (Länge ???)
 	- 2x Nutensteine
 - Werkzeug
 	- M3-Schrauber
@@ -83,7 +83,7 @@ A step-by-step guide for assembling and testing the winder and its components.
 	- 1x Rahmen mit montiertem Stand
 	- 1x Spulachsmotor
 	- 4x silberne Schrauben (Länge / Typ?)
-	- 4x M4-Linsenkopfschrauben (Länge ???)
+	- 4x M5-Linsenkopfschrauben (Länge ???)
 	- 4x Nutensteine
 - Werkzeug
 	- M4-Schrauber
@@ -161,7 +161,7 @@ A step-by-step guide for assembling and testing the winder and its components.
 	- 1x Super Pipe Holder
 	- 1x Gewindestange (Länge / Durchmesser ???)
 	- 1x Glattstange (Länge / Durchmesser ???)
-	- 9x M4-Linsenkopfschrauben mit Nutensteinen
+	- 9x M5-Linsenkopfschrauben mit Nutensteinen
 	- 1x Ferrarimotor
 	- 1x Flexkappe
 	- 4x M3x8 Schrauben
@@ -171,7 +171,7 @@ A step-by-step guide for assembling and testing the winder and its components.
 	- M3-Schrauber
 	- M4-Schrauber
 - Arbeitsschritte
-	- Gleitblockhalter mit 5x M4-Linsenkopfschrauben und Nutensteinen versehen: Je langer Schlitz 2x, kurzer Schlitz 1x.
+	- Gleitblockhalter mit 5x M5-Linsenkopfschrauben und Nutensteinen versehen: Je langer Schlitz 2x, kurzer Schlitz 1x.
 	- Gleitblockhalter 6,5cm vom Stand entfernt anschrauben (ganz nach innen ausgerichtet)
 	- Ferrarimotor mit 4x M3x8 Schrauben am Gleitblockhalter befestigen, der Stecker zeigt hierbei seitlich zum Stand
 	- Flexkappe auf Stift des Ferrarimotors aufschieben und mit M2-Madenschrauben auf Stift festziehen
@@ -247,7 +247,7 @@ A step-by-step guide for assembling and testing the winder and its components.
 	- 1x Pullerhalter-Baugruppe bestehend aus 2 Pullerseitenhaltern und Zwischenteilen
 	- 1x Zwischensteg für Pullerhalter
 	- 2x umrandete Torx-Schrauben mit Nutensteinen und Unterlegscheiben (Genaue Bezeichnung?)
-	- 4x M4-Linsenkopfschrauben mit Nutensteinen
+	- 4x M5-Linsenkopfschrauben mit Nutensteinen
 	- 1x Flexkappe
 	- 6x M3x8 Schrauben
 	- 1x M3x6 Schraube
@@ -263,7 +263,7 @@ A step-by-step guide for assembling and testing the winder and its components.
 		- Bodenplatte mit 2x umrandeten Torx-Schrauben und Nutensteine testweise anschrauben. Leitfähigkeit mit Multimeter prüfen und ggf. nachfeilen
 		- Metallstaub entfernen
 		- Bodenplatte wieder von Rahmen abschrauben
-		- Bodenplatte mit 2x Torx-Schrauben+Unterlegscheiben+Nutensteine und 4x M4-Linsenkopfschrauben mit Nutensteinen versehen
+		- Bodenplatte mit 2x Torx-Schrauben+Unterlegscheiben+Nutensteine und 4x M5-Linsenkopfschrauben mit Nutensteinen versehen
 	- Pullerhalter installieren
 		- Pullerhalter-Baugruppe mit je 2x M3x20 und 1x M3x6 Schrauben für beide Seitenteile auf Bodenplatte montieren, die kurzen Schrauben hierbei in den mittleren Löchern
 		- Justierschrauben ausdrehen und mit Zwischensteg wieder einschrauben
@@ -293,7 +293,7 @@ A step-by-step guide for assembling and testing the winder and its components.
 	- 1x Elektronikhalter
 	- 1x Elektronik-Baugruppe bestehend aus ESP, CNC-Board und Verkabelung
 	- 1x Aufkleber mit MAC-Adresse des ESP's
-	- 3x M4-Linsenkopfschrauben mit Nutensteinen
+	- 3x M5-Linsenkopfschrauben mit Nutensteinen
 	- 4x M3x12 Schrauben mit Muttern
 - Werkzeug
 	- M3-Schrauber
@@ -303,7 +303,7 @@ A step-by-step guide for assembling and testing the winder and its components.
 		- MAC-Adresse mit Aufkleber auf Rahmen notieren
 		- Testaufkleber ("geht"...) von Elektronik entfernen
 		- ESP-Board mit 4x M3x12 Schrauben und M3-Muttern auf dem Halter montieren. Hierfür ggf. das CNC-Shield abnehmen
-		- 3x M4-Linsenkopfschrauben mit Nutensteinen in Elektronikhalter einsetzen
+		- 3x M5-Linsenkopfschrauben mit Nutensteinen in Elektronikhalter einsetzen
 		- Elektronikhalter auf gleicher Oberkante wie Spulachsmotor montieren, falls erforderlich kann das CNC-Board temporär vom ESP entfernt werden
 - Prüfpunkte / Mögliche Fehler
 	- Vergessene Aufkleber
