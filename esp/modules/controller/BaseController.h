@@ -3,7 +3,7 @@
 
 #include "../logger/logging.h"
 #include "../validator/McValidator.h"
-#include "../validator/McValidatorEsp32.h"
+// #include "../validator/McValidatorEsp32.h"
 
 /**
  * @brief Abstract class for controlling active modules
@@ -11,7 +11,7 @@
 class BaseController{
     protected:
         loggingLevel_e _logging = NONE; // Logging level, no logging by default
-        McValidator _mcValidator = McValidatorEsp32(); // Microcontroller-Validator for checking pin setup
+        McValidator _mcValidator = McValidator(); // Microcontroller-Validator for checking pin setup
     public:
         // TODO
         // void logPrint(loggingLevel_e currentLevel, loggingLevel_e messageLevel, char* message, ...);
@@ -33,15 +33,6 @@ class BaseController{
          * @return false controller not ready
          */
         virtual bool isReady();
-
-        /**
-         * @brief Checks whether a pin is valid and exists
-         * 
-         * @param pin Pin-number
-         * @return true pin exists
-         * @return false pin does not exist
-         */
-        bool isDigitalPinValid(uint8_t pin);
 
         // Setter-method
         void setDebuggingLevel(loggingLevel_e level);

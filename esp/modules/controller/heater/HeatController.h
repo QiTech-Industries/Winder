@@ -44,15 +44,6 @@ class HeatController : BaseController{
         float _pidValue = 0; // Result of the pid-algorithm
 
         /**
-         * @brief Checks whether a pin is valid and exists
-         * 
-         * @param pin Pin-number
-         * @return true pin exists
-         * @return false pin does not exist
-         */
-        bool isDigitalPinValid(uint8_t pin);
-
-        /**
          * @brief Initialises the controller, for example by setting pins
          */
         void init();
