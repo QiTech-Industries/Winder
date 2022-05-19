@@ -2,8 +2,8 @@
 
 // Related
 // System / External
-#include <timer.h>
 #include <WiFi.h>
+#include <timer.h>
 // Selfmade
 // Project
 //#include <QiMachineWinder.h>
@@ -13,9 +13,9 @@
  * @brief Current state of connecting to a wifi
  */
 enum wifiConnectionMode_e {
-    OFFLINE, // No connection established
-    CONNECTING, // Trying to establish connection
-    ONLINE, // Active connection established
+    OFFLINE,     // No connection established
+    CONNECTING,  // Trying to establish connection
+    ONLINE,      // Active connection established
 };
 
 class QiMachineWinder;
@@ -24,20 +24,20 @@ class QiMachineWinder;
  * @brief Manages the connection to existing wifis and the creation of an (emergency) access point
  */
 class WinderWifi {
-private:
-    QiMachineWinder& _machine; // Reference to the machine we manage the wifi for, needed for requesting the configuration
-    TimerForMethods<WinderWifi> _timer; // Timer for handeling the main loop of the wifi
-    
+   private:
+    QiMachineWinder &_machine;           // Reference to the machine we manage the wifi for, needed for requesting the configuration
+    TimerForMethods<WinderWifi> _timer;  // Timer for handeling the main loop of the wifi
+
     wifiConnectionMode_e _connectionMode = OFFLINE;
-    const char *_ssid; // SSID of network
-    const char *_password; // Password of network
-    uint8_t _timeout = 15; // Timeout in seconds
-    uint8_t _currentTimeout = 0; // Current timeout counter in seconds
-    std::function<void()> _connectionChangeCallback; // Callback for connection Change
+    const char *_ssid;                                // SSID of network
+    const char *_password;                            // Password of network
+    uint8_t _timeout = 15;                            // Timeout in seconds
+    uint8_t _currentTimeout = 0;                      // Current timeout counter in seconds
+    std::function<void()> _connectionChangeCallback;  // Callback for connection Change
 
     /**
      * @brief Invoke callback on connection Change
-     * 
+     *
      * @param newMode new connection-mode to be set
      */
     void changeMode(wifiConnectionMode_e newMode);
@@ -45,15 +45,15 @@ private:
     /**
      * @brief Get software configuration of machine
      */
-    configurationWifi_s& getConfiguration();
+    configurationWifi_s &getConfiguration();
 
-public:
+   public:
     /**
      * @brief Constructor
-     * 
+     *
      * @param winder Reference to machine to work with
      */
-    WinderWifi(QiMachineWinder& winder);
+    WinderWifi(QiMachineWinder &winder);
 
     /**
      * @brief Start timers and general operation of wifi
@@ -67,7 +67,7 @@ public:
 
     /**
      * @brief Connect to Wifi Network
-     * 
+     *
      * @param ssid SSID of network
      * @param password Password of network
      */
@@ -75,7 +75,7 @@ public:
 
     /**
      * @brief Create Access Point
-     * 
+     *
      * @param ssid ssid of the access point
      * @param password password of the access point
      */
@@ -83,7 +83,7 @@ public:
 
     /**
      * @brief Scan for available networks
-     * 
+     *
      * @return String a json-formatted list of available
      */
     String scan();

@@ -8,13 +8,13 @@
 
 // TODO: replace with proper logging
 #ifdef DEBUG_WINDER
-  #define DEBUG_PRINT(x) Serial.print(x)
-  #define DEBUG_PRINTLN(x) Serial.println(x)
-  #define DEBUG_PRINTF(x...) Serial.printf(x)
+#define DEBUG_PRINT(x) Serial.print(x)
+#define DEBUG_PRINTLN(x) Serial.println(x)
+#define DEBUG_PRINTF(x...) Serial.printf(x)
 #else
-  #define DEBUG_PRINT(x)
-  #define DEBUG_PRINTLN(x)
-  #define DEBUG_PRINTF(x...)
+#define DEBUG_PRINT(x)
+#define DEBUG_PRINTLN(x)
+#define DEBUG_PRINTF(x...)
 #endif
 
 void WinderWifi::changeMode(wifiConnectionMode_e newMode) {
@@ -22,23 +22,19 @@ void WinderWifi::changeMode(wifiConnectionMode_e newMode) {
     if (_connectionChangeCallback) _connectionChangeCallback();
 };
 
-WinderWifi::WinderWifi(QiMachineWinder& winder) : _machine(winder), _timer(this, &WinderWifi::handle) {};
+WinderWifi::WinderWifi(QiMachineWinder& winder) : _machine(winder), _timer(this, &WinderWifi::handle){};
 
-void WinderWifi::start(){
+void WinderWifi::start() {
     WiFi.scanNetworks(true);
     _timer.setInterval(1000);
     _timer.start();
 }
 
-configurationWifi_s& WinderWifi::getConfiguration(){
-    return _machine.getConfigurationSoft().wifi;
-}
+configurationWifi_s& WinderWifi::getConfiguration() { return _machine.getConfigurationSoft().wifi; }
 
-void WinderWifi::setConnectionChangeCallback(std::function<void()> newCallBack) {
-    _connectionChangeCallback = newCallBack;
-};
+void WinderWifi::setConnectionChangeCallback(std::function<void()> newCallBack) { _connectionChangeCallback = newCallBack; };
 
-void WinderWifi::connect(const char *ssid, const char *password) {
+void WinderWifi::connect(const char* ssid, const char* password) {
     _ssid = ssid;
     _password = password;
 
@@ -58,7 +54,7 @@ void WinderWifi::createAP(const char* ssid, const char* password) {
 
 String WinderWifi::scan() {
     int numberOfNetworks = WiFi.scanComplete();
-    if (numberOfNetworks == -2) { // Scan not triggered
+    if (numberOfNetworks == -2) {  // Scan not triggered
         WiFi.scanNetworks(true);
         return String("{\"networks\": []}");
     }
@@ -89,7 +85,7 @@ void WinderWifi::handle() {
 
         strcpy(getConfiguration().ssid, _ssid);
         strcpy(getConfiguration().password, _password);
-        
+
         _currentTimeout = 0;
 
         changeMode(ONLINE);
@@ -112,7 +108,7 @@ void WinderWifi::handle() {
             if (!getConfiguration().ap_enabled) {
                 DEBUG_PRINTLN("[Wifi] Starting in AP mode instead.");
                 getConfiguration().ap_enabled = true;
-                createAP("Winder", ""); // TODO: Hardcoded name/password for emergency access point
+                createAP("Winder", "");  // TODO: Hardcoded name/password for emergency access point
             }
         }
     } else if (_connectionMode == ONLINE && !WiFi.isConnected()) {
@@ -121,6 +117,4 @@ void WinderWifi::handle() {
     }
 };
 
-wifiConnectionMode_e WinderWifi::getConnectionMode(){
-    return _connectionMode;
-}
+wifiConnectionMode_e WinderWifi::getConnectionMode() { return _connectionMode; }

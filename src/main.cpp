@@ -6,12 +6,11 @@
 
 QiMachineWinder JarvisWinder;
 
-void setup()
-{
+void setup() {
     SPI.begin();
     Serial.begin(115200);
     configurationMachineWinder_s conf = {
-        .hard = {
+        .hard = { // configuration that is determined by hardware
             .motors = {
                 .puller = {
                     .stepperId = "puller",
@@ -20,8 +19,7 @@ void setup()
                     .stepsPerRotation = 200,
                     .mmPerRotation = 108,
                     .gearRatio = 1,
-                    //.default_acceleration = 10000,
-                    //.stall = 7,
+                    .stall = 8,
                     .pins = {
                         .en = 12,
                         .dir = 27,
@@ -36,8 +34,7 @@ void setup()
                     .stepsPerRotation = 200,
                     .mmPerRotation = 8,
                     .gearRatio = 1,
-                    //.default_acceleration = 10000,
-                    //.stall = 7,
+                    .stall = 5, // 5 = new big ferrari motor, 9 = old small ferrari motor
                     .pins = {
                         .en = 12,
                         .dir = 14,
@@ -52,8 +49,7 @@ void setup()
                     .stepsPerRotation = 200,
                     .mmPerRotation = 2800,
                     .gearRatio = 5.18,
-                    //.default_acceleration = 10000,
-                    //.stall = 8, // 310 if spool is not filled up
+                    .stall = 8,
                     .pins = {
                         .en = 12,
                         .dir = 16,
@@ -65,22 +61,21 @@ void setup()
             },
             .server = {
                 .port = 80,
-                "index.html",
-                "/ws"
+                .default_path = "index.html",
+                .socket_path = "/ws"
             },
             .device = {
                 .hardware_version = 1,
             }},
-        .soft = {
+        .soft = { // configuration that can be modified by user
             .wifi = {
-                // TODO: fix struct-initialisation
-                "QiTech", // .ssid = 
-                "Malte100%", // .password = 
-                "Jarvis Winder", // .ap_ssid = 
-                "", // .ap_password = 
-                "Jarvis Winder", // .friendly_name = 
-                "winder", // .mdns_name = 
-                true, // .ap_enabled = 
+                .ssid = "QiTech",
+                .password = "Malte100%",
+                .ap_ssid = "Jarvis Winder",
+                .ap_password = "",
+                .friendly_name = "Jarvis Winder",
+                .mdns_name = "winder",
+                .ap_enabled = true, 
             },
             .software = {
                 .spiffs = {"0.0.1", "1209211146"},

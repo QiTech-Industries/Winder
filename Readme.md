@@ -1,61 +1,64 @@
-# Winder
-Filament winding machine powererd by ESPdruino
-##
 
-![image](https://user-images.githubusercontent.com/44653977/145229151-0e3af182-71b8-4e73-92b5-81c7ff54755a.png)
-Complete Spreadsheet: https://drive.google.com/file/d/1gbKM7DA7PI7s1-ne_VomcjOrb0bE2TPZ/view
+# About: Jarvis Winder
+This project covers the code for the Jarvis Winder, which is a machine for winding filaments used for 3D-printing. The projects and its parts are property of QiTech Industries and must not be altered, copied or distributed without written permission.
+## Purpose
+The winder is used to wind freshly extruded filament on spools and rewind filament from one spool to another. The machine can be controlled via webinterface, which can be accessed with mobile devices, too. The winder can either log into an existing wifi or create its own on the fly.
 
-# Board Schematics
-## Arduino + CNC Shield
-![Arduino-CNC-Shield-Scematics_](https://user-images.githubusercontent.com/44653977/126171971-0116264c-c214-4cdb-9ea3-75b781c61fb7.jpg)
-## ESPdruino
+# Development
+## Setup
+Steps for setting up your dev-environment
+- Install and set up Visual Studio Code
+    - required extensions ( ``Ctrl+Shift+X`` )
+        - C/C++ `ms-vscode.cpptools`
+        - PlatformIO IDE `platformio.platformio-ide`
+    - recommended extensions
+      - Code comments with `/** + Shift + Enter` `cschlosser.doxdocgen`
+      - Code spell checker `streetsidesoftware.code-spell-checker`
+      - Markdown formatter `yzhang.markdown-all-in-one`
+    - required settings
+        - C_Cpp.clang_format_fallbackStyle: ``{ BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 140 }``
+          - use `Shift + Alt + F` to format files according to style
+        - files.insertFinalNewline: true
+        - files.eol: \n
+- Install ESP32 drivers
+  - CP210 https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers
+  - CH341 http://www.wch.cn/downloads/CH341SER_EXE.html
+- Checkout the code from git
+- On the left side click on the 'PlatformIO'-Button
+    - Compile only: ``project tasks>esp32dev>general>build``
+    - Compile and run on microcontroller: ``project tasks>esp32dev>general>upload and monitor``
+## Code structure
+Do note that the following description might be outdated due to the everchanging nature of code. When in doubt result the code and don't be shy about bothering whoever is responsible to actually update documentation when committing new code.
+- PlatformIO is used to manage the microcontroller related bits
+    - check the ``platformio.ini`` for details
+- Homebrew modules / libraries
+    - BaseController
+    - Logger
+    - Validator
+## Contributing
+1. Open a new feature request issue on what you want to implement or state in an existing one that you want to implement/fix it
+2. create a new branch from the issue based on the main branch
+3. make the modifications inside your branch
+4. create a PullRequest into main
+5. wait for a review (and make requested changes)
+6. Once your Pull Request gets approved it will be merged
+## Hardware
+Basic information and specs on used modules / microcontrollers for the developer
+- Nema 17 (17HS19-2004S1)
+- Nema 17 Planetary 1:5.18 (17HS19-1684S-PG5)
+- TMC2130
+- ESPduino (ESP32WROOM32)
+- CNC Shield
 
-![NJVdz](https://user-images.githubusercontent.com/61654753/126534017-fa5016fe-27c8-49df-95e9-fb70896e3d30.png)
-
-![ESPdruino-Schematics](https://user-images.githubusercontent.com/44653977/126172108-59261051-43c0-4276-8642-24a51f24ba7b.jpeg)
-## TMC21130 pin out
-![TMC2130-Pinout-with-Legend-1](https://user-images.githubusercontent.com/61654753/126180279-9baa4cb1-23f9-4813-917e-d8515cacb58d.jpg)
-
-## ESP-Prog (Debug Board) Connection
-![image](https://user-images.githubusercontent.com/44653977/145601972-2034f089-48b3-4c26-a7a0-b06e2f7205e2.png)
-
-# Port Mappings
-| ESPdruino | Adruino | CNC Shield |
-|-----------|---------|------------|
-| 0         |         |            |
-| 5V        | 5V      |            |
-| RST       | RES     | RST        |
-| 3,3V      | 3,3V    | 3,3V       |
-| 5V        | 5V      | 5V         |
-| GND       | GND     | GND1       |
-| GND       | GND     | GND2       |
-| VN        | VIN     | V_IN       |
-| 2         | 0       | AD0 (Abort)|
-| 4         | 1       | AD1 (Hold) |
-| 36        | 2       | AD2 (resum)|
-| 34        | 3       | AD3        |
-| 38        | 4       | AD4        |
-| 39        | 5       | AD5        |
-| SCL       | SCL     | 22         |
-| SDA       | SDA     | 21         |
-| RST       | AREF    |            |
-| GND       | GND     | GND        |
-| 18 (SCK)  | 13      | SpinDir    |
-| 19 (MISO) | 12      | SpinEnable |
-| 23 (MOSI) | 11      | Z-EndStop  |
-| 5  (SS)   | 10      | Y-EndStop  |
-| 13        | 9       | X-EndStop  |
-| 12        | 8       | EN         |
-| 14        | 7       | Z-DIR      |
-| 27        | 6       | Y-DIR      |
-| 16        | 5       | X-DIR      |
-| 17        | 4       | Z-STEP     |
-| 25        | 3       | Y-STEP     |
-| 26        | 2       | X-STEP     |
-|           | TX->1   | D1         |
-|           | TX<-0   | D0         |
-
-
-Pin Nutztung:
-Für 3ten CS Pin funkioniert der Abort pin unten rechts auf den CNC shield.
-SDA(21) SCL(22) Coolant(34) auf den CNC-Shield als CS pin benutzten funktioniert nicht. Tx pin ist as CS pin nutzbar aber sehr unzuverlässig weil er auch für den Serial Monitor gebraucht wird.
+# Formalities
+## Licenses
+Here is a list of licenses for the libraries and components being used:
+| Library           | Info                                                 | License       |
+| ----------------- | ---------------------------------------------------- | ------------- |
+| ArduinoJson       | https://arduinojson.org/                             | MIT           |
+| Timer             | https://github.com/brunocalou/Timer                  | MIT           |
+| ESPAsyncWebServer | https://github.com/me-no-dev/ESPAsyncWebServer       | GNU-2.1       |
+| LITTLEFS          | https://github.com/lorol/LITTLEFS.git                | GPL-2.0       |
+| HardwareControl   | https://github.com/QiTech-Industries/HardwareControl | QiTech Custom |
+| FastAccelStepper  | https://github.com/gin66/FastAccelStepper            | MIT           |
+| TMCStepper        | https://github.com/teemuatlut/TMCStepper             | MIT           |

@@ -107,8 +107,7 @@ void configurationMachineWinderSoftware_s::loadBlynkCredentials() {
         Serial.println(String(" => ") + blynkStore.wifiPass);
         strlcpy(this->wifi.ssid, blynkStore.wifiSSID, sizeof(this->wifi.ssid));
         strlcpy(this->wifi.password, blynkStore.wifiPass, sizeof(this->wifi.password));
-    }
-    else {
+    } else {
         Serial.println("[EEPROM] No Old Blynk Configuration found.");
     }
     prefs.end();

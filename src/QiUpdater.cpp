@@ -1,11 +1,12 @@
 // Related
 #include <QiUpdater.h>
 // System / External
-#include <string>
+#include <HTTPClient.h>
+#include <Update.h>  // Update Frimware and Interface
 #include <stdint.h>
 #include <timer.h>
-#include <HTTPClient.h>
-#include <Update.h> // Update Frimware and Interface
+
+#include <string>
 // Selfmade
 // Project
 #include <QiMachineWinder.h>
@@ -13,26 +14,23 @@
 
 // TODO: Replace with proper debugging/logging
 #ifdef DEBUG_WINDER
-  #define DEBUG_PRINT(x) Serial.print(x)
-  #define DEBUG_PRINTLN(x) Serial.println(x)
-  #define DEBUG_PRINTF(x...) Serial.printf(x)
+#define DEBUG_PRINT(x) Serial.print(x)
+#define DEBUG_PRINTLN(x) Serial.println(x)
+#define DEBUG_PRINTF(x...) Serial.printf(x)
 #else
-  #define DEBUG_PRINT(x)
-  #define DEBUG_PRINTLN(x)
-  #define DEBUG_PRINTF(x...)
+#define DEBUG_PRINT(x)
+#define DEBUG_PRINTLN(x)
+#define DEBUG_PRINTF(x...)
 #endif
 
-QiUpdater::QiUpdater(QiMachineWinder& winder) : _machine(winder), timer(this, &QiUpdater::handle) {
-    http.collectHeaders(headerKeys, 4);
-}
+QiUpdater::QiUpdater(QiMachineWinder& winder) : _machine(winder), timer(this, &QiUpdater::handle) { http.collectHeaders(headerKeys, 4); }
 
-configurationMachineWinderSoftware_s& QiUpdater::getConfiguration(){
-    return _machine.getConfigurationSoft();
-}
+configurationMachineWinderSoftware_s& QiUpdater::getConfiguration() { return _machine.getConfigurationSoft(); }
 
 void QiUpdater::restartMCU() {
     ESP.restart();
-    while (true) {}; // Wait for microcontroller to finally die
+    while (true) {
+    };  // Wait for microcontroller to finally die
 }
 
 void QiUpdater::setInterval(uint16_t interval) {
@@ -42,7 +40,8 @@ void QiUpdater::setInterval(uint16_t interval) {
 
 void QiUpdater::handle() {
     // Check whether we are ready for an update
-    if (!WiFi.isConnected() || Update.isRunning() || (_machine.getCurrentMode() != OPERATE_OFF && _machine.getCurrentMode() != OPERATE_STANDBY)) {
+    if (!WiFi.isConnected() || Update.isRunning() ||
+        (_machine.getCurrentMode() != OPERATE_OFF && _machine.getCurrentMode() != OPERATE_STANDBY)) {
         return;
     }
 
@@ -54,7 +53,7 @@ void QiUpdater::handle() {
     String XBuild = http.header(headerKeys[1]);
     String XVersion = http.header(headerKeys[2]);
     String date = http.header(headerKeys[3]);
-    int partition; // Identifier which partition has to be updated and thus rewritten
+    int partition;  // Identifier which partition has to be updated and thus rewritten
 
     if (XUpdate == "spiffs") {
         partition = U_SPIFFS;
@@ -81,11 +80,11 @@ void QiUpdater::handle() {
         DEBUG_PRINTLN("[Updater] Not enough space to begin OTA");
         return;
     }
-    
+
     getConfiguration().backup();
     DEBUG_PRINTLN("[Updater] Starting update of " + XUpdate);
 
-    Client &client = http.getStream();
+    Client& client = http.getStream();
     Update.writeStream(client);
 
     if (!Update.end()) {
@@ -105,6 +104,6 @@ void QiUpdater::handle() {
     if (http.GET() == HTTP_CODE_NO_CONTENT) {
         DEBUG_PRINTLN("[Updater] Update successfully completed.");
         // Do NOT restart to avoid interrupting the users real life workflow
-        //restartMCU();
+        // restartMCU();
     }
 }
