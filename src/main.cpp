@@ -34,7 +34,7 @@ void setup() {
                     .stepsPerRotation = 200,
                     .mmPerRotation = 8,
                     .gearRatio = 1,
-                    .stall = 5, // 5 = new big ferrari motor, 9 = old small ferrari motor
+                    .stall = 2, // 5 = new big ferrari motor, 8 = old small ferrari motor
                     .pins = {
                         .en = 12,
                         .dir = 14,
