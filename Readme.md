@@ -98,7 +98,17 @@ And the following main hardware components:
 <!-- GETTING STARTED -->
 ## Getting Started
 
+### Usage
 To get a local copy flashed to the machine run these simple steps.
+
+1. Download the latest firmware-full.bin file from the releases section.
+2. Use the ESP Web flashing tool: https://espressif.github.io/esptool-js/ (recent Chrome or Edge Version)
+  - install correct drivers so the ESP is recognized by the PC 
+  - select baude 115200 and click connect
+  - grant access to the serial port your esp is connected to
+  - set "flash address" to 0x0 and upload firmware-full.bin
+  - click the program button
+  - once finished press the reset button on the esp once and you should be all set ready to go 🏎️
 
 ### Installation
 
