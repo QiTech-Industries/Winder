@@ -44,12 +44,14 @@ Control Code of the Jarvis Winder running on an ESP32
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
+        <li><a href="#usage">Usage</a></li>
         <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
     <li><a href="#common-issues">Common Issues</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#build-your-own-winder">Build your own Winder</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
   </ol>
@@ -175,6 +177,15 @@ Than:
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
+
+<!-- Build your own Winder -->
+## Build your own Winder
+
+All the documentation for the hardware of the JARVIS WINDER including CAD models and a part list can be found in this repository: https://github.com/QiTech-Industries/winder-parts
+
+Please have in mind that we don't have the resources to provide support for custom builds. We just published our interal documentation as-is.
+
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 
 <!-- LICENSE -->
