@@ -101,9 +101,11 @@ And the following main hardware components:
 ## Getting Started
 
 ### Usage
-To get a local copy flashed to the machine run these simple steps.
+Installation is easiest via our own updater tool: https://update.qitech.de. You can just install the software to your ESP via the Browser.
 
-1. Download the latest firmware-full.bin file from the releases section.
+Alternativly you can flash a copy of the firmware-full.bin file also via any local ESP flashing utility. You might use the Espressif online flashing tool as well:
+
+1. Download the latest [firmware-full.bin](https://github.com/QiTech-Industries/Winder/releases/tag/v0.0.1) file from the releases section.
 2. Use the ESP Web flashing tool: https://espressif.github.io/esptool-js/ (recent Chrome or Edge Version)
     - install correct drivers so the ESP is recognized by the PC 
     - select baude 115200 and click connect
